@@ -26,10 +26,10 @@ int	create_server(int	port)
 	proto = getprotobyname("tcp");
 	if (proto)
 	{
-		ft_dprint(2, "getprotobyname error !\n");
+		ft_dprintf(2, "getprotobyname error !\n");
 		return (EXIT_FAILURE);
 	}
-	sock = socket(PF_INET, SOCK_STREAM, );
+	/*sock = socket(PF_INET, SOCK_STREAM, );*/
 	return (sock);
 }
 

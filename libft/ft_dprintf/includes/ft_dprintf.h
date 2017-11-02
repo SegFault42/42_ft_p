@@ -33,6 +33,7 @@ typedef struct	s_printf
 }				t_printf;
 
 int				ft_dprintf(int fd, const char *format, ...);
+int				ft_printf(const char *format, ...);
 void			percent_d(t_printf *print, va_list pa, char format);
 void			percent_s(t_printf *print, va_list pa);
 void			percent_c(t_printf *print, va_list pa);
