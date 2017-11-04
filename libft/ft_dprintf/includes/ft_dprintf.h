@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/06 09:05:53 by rabougue          #+#    #+#             */
-/*   Updated: 2017/04/06 19:29:20 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/04 01:20:42 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ typedef struct	s_printf
 }				t_printf;
 
 int				ft_dprintf(int fd, const char *format, ...);
+int				ft_printf(const char *format, ...);
 void			percent_d(t_printf *print, va_list pa, char format);
 void			percent_s(t_printf *print, va_list pa);
 void			percent_c(t_printf *print, va_list pa);
