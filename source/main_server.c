@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:15:46 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/04 05:21:57 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/04 05:45:32 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,14 +54,20 @@ int	create_server(int	port)
 	return (sock);
 }
 
-static void	is_port_valid(char **argv)
+static int	is_port_valid(char **argv)
 {
 	int	port;
 
 	port = ft_atoi(argv[1]);
 	if (port < 1024 || port > 65535)
 		usage(argv[0]);
+	return (port);
 }
+
+/*static void	stock_in_file(char *buf)*/
+/*{*/
+	
+/*}*/
 
 int	main(int argc, char **argv)
 {
@@ -75,14 +81,14 @@ int	main(int argc, char **argv)
 
 	if (argc != 2)
 		usage(argv[0]);
-	port = ft_atoi(argv[1]);
-	is_port_valid(argv);
+	port = is_port_valid(argv);
 	sock = create_server(port);
 	client_socket = accept(sock, (struct sockaddr *)&client_socket_in, &client_socket_len);
 	while ((r = read(client_socket, buf, 1023)) > 0)
 	{
 		buf[r] = 0;
 		ft_printf("receveid %d byte(s) : %s\n", r, buf);
+		/*stock_in_file(buf);*/
 	}
 	close(client_socket);
 	close(sock);
