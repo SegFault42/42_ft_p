@@ -40,6 +40,7 @@ int	create_server(int	port)
 	struct protoent		*proto;
 	struct sockaddr_in	sin;
 
+<<<<<<< HEAD
 	if ((proto = getprotobyname("tcp")) == NULL)
 		ft_error(FT_GET_PROTO_BY_NAME_ERROR);
 	if ((sock = socket(PF_INET, SOCK_STREAM, proto->p_proto)) == -1)
@@ -51,6 +52,15 @@ int	create_server(int	port)
 		ft_error(FT_BIND_ERROR);
 	if ((listen(sock, 42)) == -1)
 		ft_error(FT_LISTEN_ERROR);
+=======
+	proto = getprotobyname("tcp");
+	if (proto)
+	{
+		ft_dprintf(2, "getprotobyname error !\n");
+		return (EXIT_FAILURE);
+	}
+	/*sock = socket(PF_INET, SOCK_STREAM, );*/
+>>>>>>> fab8da19facfcfae2370382129b8d161d47c53d8
 	return (sock);
 }
 

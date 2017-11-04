@@ -17,7 +17,7 @@ RED = \033[38;5;9m
 END = \033[0m
 ##################################_COMPILATION_#################################
 NAME	= serveur
-CC		= gcc
+CC		= clang
 FLAG	= -Weverything
 LFT		= ./libft/libft.a
 SRCS	= ./source/main_server.c
