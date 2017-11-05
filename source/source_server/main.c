@@ -6,33 +6,11 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:15:46 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/04 05:45:32 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/05 06:11:05 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_p.h"
-
-static int	ft_error(int	error)
-{
-	ft_printf(RED"");
-	if (error == FT_SOCKET_ERROR)
-		ft_dprintf(2, "socket() failure !\n");
-	else if (error == FT_GET_PROTO_BY_NAME_ERROR)
-		ft_dprintf(2, "getprotobyname() failure !\n");
-	else if (error == FT_BIND_ERROR)
-		ft_dprintf(2, "bind() failure !\n");
-	else if (error == FT_LISTEN_ERROR)
-		ft_dprintf(2, "listen() failure !\n");
-	ft_printf(""END);
-	ft_dprintf(2, YELLOW"errno : %s\n"END, strerror(errno));
-	exit(error);
-}
-
-int	usage(char *argv)
-{
-	ft_dprintf(2, "Usage : %s [port] (between 1024 and 65535)\n", argv);
-	exit(EXIT_FAILURE);
-}
+#include "../../include/common.h"
 
 int	create_server(int	port)
 {
@@ -54,7 +32,7 @@ int	create_server(int	port)
 	return (sock);
 }
 
-static int	is_port_valid(char **argv)
+int	is_port_valid(char **argv)
 {
 	int	port;
 
@@ -64,32 +42,39 @@ static int	is_port_valid(char **argv)
 	return (port);
 }
 
-/*static void	stock_in_file(char *buf)*/
-/*{*/
-	
-/*}*/
-
-int	main(int argc, char **argv)
+void	stock_in_file(int client_socket)
 {
-	int			port;
-	int			sock;
-	int					client_socket;
-	struct sockaddr_in	client_socket_in;
-	uint32_t			client_socket_len;
-	char				buf[1024];
 	ssize_t					r;
+	char					buf[1024];
+	int						fd;
 
-	if (argc != 2)
-		usage(argv[0]);
-	port = is_port_valid(argv);
-	sock = create_server(port);
-	client_socket = accept(sock, (struct sockaddr *)&client_socket_in, &client_socket_len);
+	if ((fd = open("./file", O_RDWR | O_CREAT | O_TRUNC, 0644)) == -1)
+		error(FT_OPEN_ERROR);
+	ft_printf(YELLOW"Copy ...\n"END);
 	while ((r = read(client_socket, buf, 1023)) > 0)
 	{
 		buf[r] = 0;
-		ft_printf("receveid %d byte(s) : %s\n", r, buf);
-		/*stock_in_file(buf);*/
+		ft_dprintf(fd, "%s", buf);
 	}
+	ft_printf(GREEN"Success\n"END);
+	close(fd);
+}
+
+int	main(int argc, char **argv)
+{
+	int					port;
+	int					sock;
+	int					client_socket;
+	uint32_t			client_socket_len;
+	struct sockaddr_in	client_socket_in;
+
+	if (argc != 2)
+		usage(argv[0]);
+	ft_printf(GREEN"FTP_SERVER started.\n"END);
+	port = is_port_valid(argv);
+	sock = create_server(port);
+	client_socket = accept(sock, (struct sockaddr *)&client_socket_in, &client_socket_len);
+	stock_in_file(client_socket);
 	close(client_socket);
 	close(sock);
 	return (EXIT_SUCCESS);
