@@ -6,12 +6,12 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:16:13 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/05 01:22:29 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/06 00:12:30 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FT_P_H
-# define FT_P_H
+#ifndef FT_COMMON_H
+# define FT_COMMON_H
 
 # include "../libft/includes/libft.h"
 # include <sys/socket.h>
@@ -27,13 +27,13 @@
 # define FT_BIND_ERROR -3
 # define FT_LISTEN_ERROR -4
 # define FT_OPEN_ERROR -5
+# define FT_CONNECT_ERROR -6
 
-int		usage(char *argv);
+# define SERVER 0
+# define CLIENT 1
+
+int		usage(char *argv, bool type);
 int		ft_error(int error);
-
-int		create_server(int port);
-int		is_port_valid(char **argv);
-void	stock_in_file(int client_socket);
-
+int		is_port_valid(char **argv, bool type);
 
 #endif

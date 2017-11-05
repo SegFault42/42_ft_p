@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/05 01:05:21 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/05 01:15:52 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/06 00:24:14 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,13 +25,18 @@ int	ft_error(int error)
 		ft_dprintf(2, "listen() failure !\n");
 	else if (error == FT_OPEN_ERROR)
 		ft_dprintf(2, "open() failure !\n");
+	else if (error == FT_CONNECT_ERROR)
+		ft_dprintf(2, "connect() failure !\n");
 	ft_printf(""END);
 	ft_dprintf(2, YELLOW"errno : %s\n"END, strerror(errno));
 	exit(error);
 }
 
-int	usage(char *argv)
+int	usage(char *argv, bool type)
 {
-	ft_dprintf(2, "Usage : %s [port] (between 1024 and 65535)\n", argv);
+	if (type == SERVER)
+		ft_dprintf(2, "Usage : %s [port] (between 1024 and 65535)\n", argv);
+	else if (type == CLIENT)
+		ft_dprintf(2, "Usage : %s [addr] [port] (between 1024 and 65535)\n", argv);
 	exit(EXIT_FAILURE);
 }

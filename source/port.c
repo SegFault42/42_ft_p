@@ -1,18 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.h                                           :+:      :+:    :+:   */
+/*   port.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/11/05 01:07:44 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/06 00:07:30 by rabougue         ###   ########.fr       */
+/*   Created: 2017/11/05 21:44:03 by rabougue          #+#    #+#             */
+/*   Updated: 2017/11/05 21:47:30 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FT_CLIENT_H
-# define FT_CLIENT_H
+#include "common.h"
 
-int		create_client(char *addr, int port);
+int	is_port_valid(char **argv, bool type)
+{
+	int	port;
 
-#endif
+	if (type == SERVER)
+	{
+		if ((port = ft_atoi(argv[1])) < 1024 || port > 65535)
+			usage(argv[0], SERVER);
+	}
+	else
+	{
+		if ((port = ft_atoi(argv[2])) < 1024 || port > 65535)
+			usage(argv[0], CLIENT);
+	}
+	return (port);
+}
+
