@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:15:46 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/06 00:27:26 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/06 02:32:33 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,8 @@ int	main(int argc, char **argv)
 	ft_printf(GREEN"FTP_SERVER started.\n"END);
 	port = is_port_valid(argv, SERVER);
 	sock = create_server(port);
-	client_socket = accept(sock, (struct sockaddr *)&client_socket_in, &client_socket_len);
+	client_socket = accept(sock, (struct sockaddr *)&client_socket_in,\
+			&client_socket_len);
 	stock_in_file(client_socket);
 	close(client_socket);
 	close(sock);
