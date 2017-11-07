@@ -6,15 +6,22 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:26:50 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/06 00:27:25 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/07 06:55:45 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "common.h"
 
-int	create_server(int	port)
+/*
+** bind() liason du socket au client
+** listen() ecoute les conexion entrante
+*/
+
+int	create_server(int port)
 {
 	int					sock;
+	char				str[INET_ADDRSTRLEN];
+	uint32_t			client_socket_len;
 	struct protoent		*proto;
 	struct sockaddr_in	sin;
 
@@ -29,6 +36,11 @@ int	create_server(int	port)
 		ft_error(FT_BIND_ERROR);
 	if ((listen(sock, 42)) == -1)
 		ft_error(FT_LISTEN_ERROR);
+	sock = accept(sock, (struct sockaddr *)&sin, &client_socket_len);
+
+	inet_ntop(AF_INET, &(sin.sin_addr), str, INET_ADDRSTRLEN);
+	ft_printf(PURPLE"Connection from : %s\n"END, str);
+
 	return (sock);
 }
 
@@ -49,3 +61,23 @@ void	stock_in_file(int client_socket)
 	close(fd);
 }
 
+void	recv_from_client(int client_socket)
+{
+	char	buff[1024];
+	ssize_t	ret_recv;
+
+	ft_memset(&buff, 0, sizeof(buff));
+	/*while (true)*/
+	/*{*/
+		if ((ret_recv = recv(client_socket, buff, sizeof(buff) -1, 0)) < 0)
+			ft_error(FT_RECV_ERROR);
+		buff[ret_recv] = 0;
+
+		ft_printf("%d\n", ret_recv);
+		/*if (ret_recv == 0)*/
+			/*break ;*/
+	/*}*/
+	ft_strcpy(buff, "cmd ok");
+	if (send(client_socket, buff, strlen(buff), 0) < 0)
+		ft_error(FT_SEND_ERROR);
+}
