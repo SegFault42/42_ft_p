@@ -36,6 +36,6 @@
 
 int		usage(char *argv, bool type);
 int		ft_error(int error);
-int		is_port_valid(char **argv, bool type);
+uint16_t	is_port_valid(char **argv, bool type);
 
 #endif

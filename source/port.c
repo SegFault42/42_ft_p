@@ -12,20 +12,23 @@
 
 #include "common.h"
 
-int	is_port_valid(char **argv, bool type)
+uint16_t	is_port_valid(char **argv, bool type)
 {
-	int	port;
+	uint16_t	port;
 
 	if (type == SERVER)
 	{
-		if ((port = ft_atoi(argv[1])) < 1024 || port > 65535)
-			usage(argv[0], SERVER);
+		if (argv[1][0] == '-' ||
+		(port = (uint16_t)ft_atoi(argv[1])) < 1024 || port > 65535)
+			return ((uint16_t)usage(argv[0], SERVER));
 	}
 	else
 	{
-		if ((port = ft_atoi(argv[2])) < 1024 || port > 65535)
-			usage(argv[0], CLIENT);
+		if (argv[1][0] == '-' ||
+		(port = (uint16_t)ft_atoi(argv[2])) < 1024 || port > 65535)
+			return ((uint16_t)usage(argv[0], CLIENT));
 	}
+	printf("port = %d\n", port);
 	return (port);
 }
 

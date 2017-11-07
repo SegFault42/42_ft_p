@@ -23,7 +23,7 @@
 ** La structure est remplie, on peut demander une connection avec connect()
 */
 
-int	create_client(char *addr, int port)
+int	create_client(char *addr, uint16_t port)
 {
 	int					sock;
 	struct protoent		*proto;

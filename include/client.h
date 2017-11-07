@@ -13,7 +13,7 @@
 #ifndef FT_CLIENT_H
 # define FT_CLIENT_H
 
-int		create_client(char *addr, int port);
+int		create_client(char *addr, uint16_t port);
 void	command(int sock);
 void	send_to_server(int sock, char *buf);
 

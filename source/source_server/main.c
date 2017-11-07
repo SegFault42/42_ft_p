@@ -14,17 +14,19 @@
 
 int	main(int argc, char **argv)
 {
-	int					port;
-	int					client_socket;
+	uint16_t	port;
+	int			client_socket;
 
 	if (argc != 2)
 		usage(argv[0], SERVER);
-	ft_printf(GREEN"FTP_SERVER started.\n"END);
 	port = is_port_valid(argv, SERVER);
+
+	ft_printf(GREEN"FTP_SERVER started.\n"END);
+
 	client_socket = create_server(port);
 
-	/*stock_in_file(client_socket);*/
 
+	/*stock_in_file(client_socket);*/
 	recv_from_client(client_socket);
 
 	close(client_socket);

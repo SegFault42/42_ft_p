@@ -14,7 +14,7 @@
 
 int	main(int argc, char **argv)
 {
-	int					port;
+	uint16_t			port;
 	int					sock;
 
 	if (argc != 3)

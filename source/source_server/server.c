@@ -17,10 +17,10 @@
 ** listen() ecoute les conexion entrante
 */
 
-int	create_server(int port)
+int	create_server(uint16_t port)
 {
 	int					sock;
-	char				str[INET_ADDRSTRLEN];
+	char				addr[INET_ADDRSTRLEN];
 	uint32_t			client_socket_len;
 	struct protoent		*proto;
 	struct sockaddr_in	sin;
@@ -38,8 +38,8 @@ int	create_server(int port)
 		ft_error(FT_LISTEN_ERROR);
 	sock = accept(sock, (struct sockaddr *)&sin, &client_socket_len);
 
-	inet_ntop(AF_INET, &(sin.sin_addr), str, INET_ADDRSTRLEN);
-	ft_printf(PURPLE"Connection from : %s\n"END, str);
+	inet_ntop(AF_INET, &(sin.sin_addr), addr, INET_ADDRSTRLEN);
+	ft_printf(PURPLE"Connection from : %s\n"END, addr);
 
 	return (sock);
 }

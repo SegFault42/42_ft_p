@@ -11,21 +11,21 @@
 # **************************************************************************** #
 
 all:
-	@make -f ./Makefile.serveur
-	@make -f ./Makefile.client
+	@make -sf ./Makefile.serveur
+	@make -sf ./Makefile.client
 
 serveur:
-	@make -f ./Makefile.serveur
+	@make -sf ./Makefile.serveur
 
 client:
-	@make -f Makefile.client
+	@make -sf Makefile.client
 
 clean:
-	@make clean -f ./Makefile.serveur
-	@make clean -f ./Makefile.client
+	@make clean -sf ./Makefile.serveur
+	@make clean -sf ./Makefile.client
 
 fclean:
-	@make fclean -f ./Makefile.serveur
-	@make fclean -f ./Makefile.client
+	@make fclean -sf ./Makefile.serveur
+	@make fclean -sf ./Makefile.client
 
 re: fclean all
