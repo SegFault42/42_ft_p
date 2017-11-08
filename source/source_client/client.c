@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:25:03 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/07 06:56:01 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/08 04:32:14 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@
 ** renvoie l'adresse IP correctement formatter
 ** La structure est remplie, on peut demander une connection avec connect()
 */
+
+static char	*g_cmds[] = {"pwd", "ls", "quit", NULL};
 
 int	create_client(char *addr, uint16_t port)
 {
@@ -44,37 +46,46 @@ int	create_client(char *addr, uint16_t port)
 void	command(int sock)
 {
 	ssize_t	r;
-	char	buf[1024];
+	char	buff[1024];
+	int8_t	iter;
 
-	while(ft_printf(YELLOW"ftp> "END)&&(r = read(STDIN_FILENO, &buf, 1023)) > 0)
+	while(ft_printf(YELLOW"ftp> "END)&&(r = read(STDIN_FILENO, &buff, 1023)) > 0)
 	{
-		buf[r -1] = '\0';
-		if (ft_strcmp("quit", buf) == 0 && ft_printf(YELLOW"ftp> Bye\n"END))
-			return ;
-		else if (ft_strcmp("pwd", buf) == 0)
-			send_to_server(sock, buf);
+		iter = 0;
+		buff[r -1] = '\0';
+		while (g_cmds[iter])
+		{
+			if (!ft_strcmp(buff, g_cmds[iter]))
+			{
+				if (send_to_server(sock, buff) == QUIT)
+					return ;
+				break ;
+			}
+			++iter;
+		}
+		if (iter == ft_count_2d_tab(g_cmds))
+			ft_dprintf(2, "Unknow command !\n");
 	}
-	ft_printf(YELLOW"Bye\n"END);
 }
 
-void	send_to_server(int sock, char *buf)
+int	send_to_server(int sock, char *buf)
 {
 	char	buff[1024];
 	ssize_t	ret_recv;
 
 	ft_memset(&buff, 0, sizeof(buff));
+	ret_recv = 1024;
+
 	if(send(sock, buf, strlen(buf), 0) < 0)
 		ft_error(FT_SEND_ERROR);
-
-	/*while (true)*/
-	/*{*/
+	while (ret_recv == 1024)
+	{
 		if ((ret_recv = recv(sock, buff, sizeof(buff) -1, 0)) < 0)
 			ft_error(FT_RECV_ERROR);
 		buff[ret_recv] = 0;
 		ft_printf("%s\n", buff);
-		ft_printf("%d\n", ret_recv);
-		/*if (ret_recv == 0)*/
-			/*break ;*/
-	/*}*/
-
+		if (ft_strcmp("quit", buf) == 0 && ft_printf(YELLOW"ftp> Bye\n"END))
+			return (QUIT);
+	}
+	return (1);
 }

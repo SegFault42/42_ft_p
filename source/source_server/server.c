@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:26:50 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/07 06:55:45 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/08 04:58:27 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,23 +61,34 @@ void	stock_in_file(int client_socket)
 	close(fd);
 }
 
+/*
+** Une fois le client connecter au serveur, la fonction recv bloque le
+** programme jusqu'a qu'elle recoie une donner (via send cote client).
+*/
+
+#define BUFF_LEN 1024
+
 void	recv_from_client(int client_socket)
 {
-	char	buff[1024];
+	char	buff[BUFF_LEN];
 	ssize_t	ret_recv;
 
-	ft_memset(&buff, 0, sizeof(buff));
-	/*while (true)*/
-	/*{*/
-		if ((ret_recv = recv(client_socket, buff, sizeof(buff) -1, 0)) < 0)
-			ft_error(FT_RECV_ERROR);
-		buff[ret_recv] = 0;
-
-		ft_printf("%d\n", ret_recv);
-		/*if (ret_recv == 0)*/
-			/*break ;*/
-	/*}*/
-	ft_strcpy(buff, "cmd ok");
-	if (send(client_socket, buff, strlen(buff), 0) < 0)
-		ft_error(FT_SEND_ERROR);
+	while (true)
+	{
+		ret_recv = BUFF_LEN;
+		ft_memset(&buff, 0, sizeof(buff));
+		while (ret_recv == BUFF_LEN)
+		{
+			if ((ret_recv = recv(client_socket, buff, sizeof(buff) -1, 0)) < 0)
+				ft_error(FT_RECV_ERROR);
+			buff[ret_recv] = 0;
+		}
+		ft_printf(RED"%s received\n"END, buff);
+		if (!ft_strcmp(buff, "quit") || ft_strlen(buff) == 0)
+			break ;
+		if (!ft_strcmp(buff, "pwd"))
+			getcwd(buff, BUFF_LEN);
+		if (send(client_socket, buff, strlen(buff), 0) < 0)
+			ft_error(FT_SEND_ERROR);
+	}
 }
