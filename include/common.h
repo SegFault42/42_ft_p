@@ -15,6 +15,7 @@
 
 # include "../libft/includes/libft.h"
 # include <sys/socket.h>
+# include <sys/wait.h>
 # include <netdb.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
@@ -34,6 +35,8 @@
 # define SERVER	0
 # define CLIENT	1
 # define QUIT	-1
+
+# define COMMAND split[0]
 
 int		usage(char *argv, bool type);
 int		ft_error(int error);

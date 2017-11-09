@@ -23,7 +23,7 @@
 ** La structure est remplie, on peut demander une connection avec connect()
 */
 
-static char	*g_cmds[] = {"pwd", "ls", "quit", NULL};
+static char	*g_cmds[] = {"ls", "cd", "get", "put", "pwd", "quit", NULL};
 
 int	create_client(char *addr, uint16_t port)
 {
@@ -45,24 +45,32 @@ int	create_client(char *addr, uint16_t port)
 
 void	command(int sock)
 {
-	ssize_t	r;
+	ssize_t	read_ret;
 	char	buff[1024];
 	int8_t	iter;
+	char	**split;
 
-	while(ft_printf(YELLOW"ftp> "END)&&(r = read(STDIN_FILENO, &buff, 1023)) > 0)
+	while(ft_printf(YELLOW"ftp> "END)&&(read_ret = read(STDIN_FILENO, &buff, 1023)) > 0)
 	{
+		if (read_ret == 1)
+			continue;
 		iter = 0;
-		buff[r -1] = '\0';
+		buff[read_ret -1] = '\0';
+		split = ft_strsplit(buff, ' ');
 		while (g_cmds[iter])
 		{
-			if (!ft_strcmp(buff, g_cmds[iter]))
+			if (!ft_strcmp(split[0], g_cmds[iter]))
 			{
 				if (send_to_server(sock, buff) == QUIT)
+				{
+					ft_2d_tab_free(split);
 					return ;
+				}
 				break ;
 			}
 			++iter;
 		}
+		ft_2d_tab_free(split);
 		if (iter == ft_count_2d_tab(g_cmds))
 			ft_dprintf(2, "Unknow command !\n");
 	}
@@ -76,6 +84,8 @@ int	send_to_server(int sock, char *buf)
 	ft_memset(&buff, 0, sizeof(buff));
 	ret_recv = 1024;
 
+	if (ft_strcmp("quit", buf) == 0 && ft_printf(YELLOW"ftp> Bye\n"END))
+		return (QUIT);
 	if(send(sock, buf, strlen(buf), 0) < 0)
 		ft_error(FT_SEND_ERROR);
 	while (ret_recv == 1024)
@@ -84,8 +94,6 @@ int	send_to_server(int sock, char *buf)
 			ft_error(FT_RECV_ERROR);
 		buff[ret_recv] = 0;
 		ft_printf("%s\n", buff);
-		if (ft_strcmp("quit", buf) == 0 && ft_printf(YELLOW"ftp> Bye\n"END))
-			return (QUIT);
 	}
 	return (1);
 }
