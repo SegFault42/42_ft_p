@@ -52,11 +52,10 @@ void	command(int sock)
 
 	while(ft_printf(YELLOW"ftp> "END)&&(read_ret = read(STDIN_FILENO, &buff, 1023)) > 0)
 	{
-		if (read_ret == 1)
+		buff[read_ret -1] = '\0';
+		if (read_ret == 1 || (split = ft_strsplit_blank(buff)) == NULL)
 			continue;
 		iter = 0;
-		buff[read_ret -1] = '\0';
-		split = ft_strsplit(buff, ' ');
 		while (g_cmds[iter])
 		{
 			if (!ft_strcmp(split[0], g_cmds[iter]))

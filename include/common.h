@@ -31,6 +31,7 @@
 # define FT_CONNECT_ERROR			-6
 # define FT_SEND_ERROR				-7
 # define FT_RECV_ERROR				-7
+# define FT_DUP2_ERROR				-8
 
 # define SERVER	0
 # define CLIENT	1

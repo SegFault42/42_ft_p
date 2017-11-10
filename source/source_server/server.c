@@ -66,20 +66,58 @@ void	stock_in_file(int client_socket)
 ** programme jusqu'a qu'elle recoie une donner (via send cote client).
 */
 
+#define BUFF_LEN 1024
 
-static void	exec_command()
+static void	exec_command(char *buff, int client_socket)
 {
-	
+	char	**split;
+	int	child_pid;
+
+	split = ft_strsplit_blank(buff);
+	if (!ft_strcmp(COMMAND, "pwd"))
+	{
+		if (getcwd(buff, BUFF_LEN) == NULL)
+			ft_strcpy(buff, "Gerer le cas ou getcw a un long path"); // Ne pas oublier
+	}
+	else if (!ft_strcmp(COMMAND, "cd"))
+	{
+		if (chdir(split[1]))
+			ft_strcpy(buff, "Invalid directory");
+		else
+			ft_strcpy(buff, "Directory changed");
+	}
+	else if (!ft_strcmp(COMMAND, "ls"))
+	{
+
+		child_pid = fork();
+		if (child_pid == -1)
+		{
+			perror("can't fork");
+			exit(errno);
+		}
+		else if (child_pid == 0)
+		{
+			if (dup2(client_socket, STDOUT_FILENO) == -1)
+				ft_error(FT_DUP2_ERROR);
+			if (dup2(client_socket, STDERR_FILENO) == -1)
+				ft_error(FT_DUP2_ERROR);
+			close(client_socket);
+			execv("/bin/ls", split);
+			exit(0);
+		}
+		else
+			wait(0);
+	}
+	ft_2d_tab_free(split);
 }
 
-#define BUFF_LEN 1024
 
 void	recv_from_client(int client_socket)
 {
 	char	buff[BUFF_LEN];
 	ssize_t	ret_recv;
-	char	**split;
-	int	child_pid;
+	ssize_t	ret_send;
+	ssize_t	ret_read;
 
 	while (true)
 	{
@@ -94,43 +132,16 @@ void	recv_from_client(int client_socket)
 		if (!ft_strcmp(buff, "quit") || !ft_strlen(buff))
 			break ;
 		ft_printf(RED"%s received\n"END, buff);
-		split = ft_strsplit(buff, ' ');
-		if (!ft_strcmp(COMMAND, "pwd"))
-		{
-			if (getcwd(buff, BUFF_LEN) == NULL)
-				ft_strcpy(buff, "Gerer le cas ou getcw a un long path"); // Ne pas oublier
-		}
-		else if (!ft_strcmp(COMMAND, "cd"))
-		{
-			if (chdir(split[1]))
-				ft_strcpy(buff, "Invalid directory");
-			else
-				ft_strcpy(buff, "Directory changed");
-		}
-		else if (!ft_strcmp(COMMAND, "ls"))
-		{
+		exec_command(buff, client_socket);
 
-			child_pid = fork();
-			if (child_pid == -1)
-			{
-				perror("can't fork : ");
-				exit(errno);
-			}
-			else if (child_pid == 0)
-			{
-				dup2(client_socket, 1);
-				dup2(client_socket, 2);
-				/*close(client_socket);*/
-				execv("/bin/ls", split);
-				exit(0);
-			}
-			else
-			{
-				wait(0);
-			}
+		while ((ret_read = read(client_socket, buff, BUFF_LEN -1)) > 0)
+		{
+			buff[ret_read] = 0;
+			if ((ret_send = send(client_socket, buff, (size_t)ret_read, 0) < 0))
+				ft_error(FT_SEND_ERROR);
+			ft_printf("%d\n", ret_send);
 		}
-		ft_2d_tab_free(split);
-		if (send(client_socket, buff, strlen(buff), 0) < 0)
-			ft_error(FT_SEND_ERROR);
+		if (ret_read == -1)
+			perror("ret_read()");
 	}
 }
