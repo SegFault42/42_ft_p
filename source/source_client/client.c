@@ -75,24 +75,26 @@ void	command(int sock)
 	}
 }
 
-int	send_to_server(int sock, char *buf)
+int	send_to_server(int sock, char *cmd)
 {
 	char	buff[1024];
 	ssize_t	ret_recv;
 
 	ft_memset(&buff, 0, sizeof(buff));
-	ret_recv = 1024;
+	ret_recv = 1023;
 
-	if (ft_strcmp("quit", buf) == 0 && ft_printf(YELLOW"ftp> Bye\n"END))
+	if (ft_strcmp("quit", cmd) == 0 && ft_printf(YELLOW"ftp> Bye\n"END))
 		return (QUIT);
-	if(send(sock, buf, strlen(buf), 0) < 0)
+	if(send(sock, cmd, strlen(cmd), 0) < 0)
 		ft_error(FT_SEND_ERROR);
-	while (ret_recv == 1024)
+	while (ret_recv == 1023)
 	{
 		if ((ret_recv = recv(sock, buff, sizeof(buff) -1, 0)) < 0)
 			ft_error(FT_RECV_ERROR);
 		buff[ret_recv] = 0;
-		ft_printf("%s\n", buff);
+		write(1, buff, ft_strlen(buff));
+		ft_printf("{%d}", ret_recv);
 	}
+	RC;
 	return (1);
 }

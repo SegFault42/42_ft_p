@@ -25,7 +25,6 @@ int	main(int argc, char **argv)
 
 	client_socket = create_server(port);
 
-
 	/*stock_in_file(client_socket);*/
 	recv_from_client(client_socket);
 
