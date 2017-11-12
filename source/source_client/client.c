@@ -77,22 +77,22 @@ void	command(int sock)
 
 int	send_to_server(int sock, char *cmd)
 {
-	char	buff[1024];
+	char	buff[4097];
 	ssize_t	ret_recv;
 
 	ft_memset(&buff, 0, sizeof(buff));
-	ret_recv = 1023;
+	ret_recv = 4096;
 
 	if (ft_strcmp("quit", cmd) == 0 && ft_printf(YELLOW"ftp> Bye\n"END))
 		return (QUIT);
 	if(send(sock, cmd, strlen(cmd), 0) < 0)
 		ft_error(FT_SEND_ERROR);
-	while (ret_recv == 1023)
+	while (ret_recv == 4096)
 	{
-		if ((ret_recv = recv(sock, buff, sizeof(buff) -1, 0)) < 0)
+		if ((ret_recv = recv(sock, buff, 4096, 0)) < 0)
 			ft_error(FT_RECV_ERROR);
 		buff[ret_recv] = 0;
-		write(1, buff, ft_strlen(buff));
+		write(1, buff, ret_recv);
 		ft_printf("{%d}", ret_recv);
 	}
 	RC;

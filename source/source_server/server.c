@@ -100,6 +100,7 @@ static void	exec_advanced_cmd(char *buff, int client_socket)
 	ssize_t	ret_send;
 	ssize_t	ret_read;
 	int	fd;
+	char	buf[4096];
 
 	split = ft_strsplit_blank(buff);
 	child_pid = fork();
@@ -117,15 +118,13 @@ static void	exec_advanced_cmd(char *buff, int client_socket)
 			ft_error(FT_DUP2_ERROR);
 		close(client_socket);
 		execv("/bin/ls", split);
-		/*while ((ret_read = read(client_socket, buff, sizeof(buff))) != 0)*/
-		/*{*/
-			while ((ret_send = send(client_socket, buff, 1023, 0) > 0))
-			{
-				
-			}
+		while ((ret_read = read(client_socket, buf, 4096)) > 0)
+		{
+			ret_send = send(client_socket, buff, 4096, 0);
 			if (ret_send == -1)
 				ft_error(FT_SEND_ERROR);
-		/*}*/
+			ft_memset(buff, 0, 4096);
+		}
 		exit(0);
 	}
 	else
