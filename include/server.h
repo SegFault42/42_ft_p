@@ -16,5 +16,6 @@
 int			create_server(uint16_t port);
 void		stock_in_file(int client_socket);
 void		recv_from_client(int client_socket);
+void	dup_server(int client_socket, struct sockaddr_in sin, uint32_t client_socket_len);
 
 #endif

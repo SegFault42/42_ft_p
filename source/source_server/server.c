@@ -12,6 +12,37 @@
 
 #include "common.h"
 
+extern char	g_orig_dir[PATH_MAX];
+
+void	dup_server(int client_socket, struct sockaddr_in sin, uint32_t client_socket_len)
+{
+	int	child_pid;
+	int	sock;
+	int	cs;
+
+	while (true)
+	{
+		sock = accept(client_socket, (struct sockaddr *)&sin, &client_socket_len);
+		child_pid = fork();
+		if (child_pid == -1)
+		{
+			/*perror("can't fork");*/
+			close(sock);
+			continue ;
+		}
+		else if (child_pid > 0)
+			continue ;
+		else if (child_pid == 0)
+		{
+			/*inet_ntop(AF_INET, &(sin.sin_addr), addr, INET_ADDRSTRLEN);*/
+			ft_printf(PURPLE"New conexion\n"END);
+			recv_from_client(sock);
+			close(sock);
+			break ;
+		}
+	}
+}
+
 /*
 ** bind() liason du socket au client
 ** listen() ecoute les conexion entrante
@@ -20,7 +51,6 @@
 int	create_server(uint16_t port)
 {
 	int					sock;
-	char				addr[INET_ADDRSTRLEN];
 	uint32_t			client_socket_len;
 	struct protoent		*proto;
 	struct sockaddr_in	sin;
@@ -34,21 +64,16 @@ int	create_server(uint16_t port)
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
 	if ((bind(sock, (const struct sockaddr *)&sin, sizeof(sin))) == -1)
 		ft_error(FT_BIND_ERROR);
-	if ((listen(sock, 42)) == -1)
+	if ((listen(sock, 2)) == -1)
 		ft_error(FT_LISTEN_ERROR);
-	sock = accept(sock, (struct sockaddr *)&sin, &client_socket_len);
-
-	inet_ntop(AF_INET, &(sin.sin_addr), addr, INET_ADDRSTRLEN);
-	ft_printf(PURPLE"Connection from : %s\n"END, addr);
-
 	return (sock);
 }
 
 void	stock_in_file(int client_socket)
 {
-	ssize_t					r;
-	char					buf[1024];
-	int						fd;
+	int		fd;
+	ssize_t	r;
+	char	buf[1024];
 
 	if ((fd = open("./file", O_RDWR | O_CREAT | O_TRUNC, 0644)) == -1)
 		error(FT_OPEN_ERROR);
@@ -68,6 +93,36 @@ void	stock_in_file(int client_socket)
 
 #define BUFF_LEN 1024
 
+static void builtin_cd(char *dir, char *buff)
+{
+	char	new_dir[PATH_MAX];
+	char	old_dir[PATH_MAX];
+
+	if (getcwd(old_dir, PATH_MAX) == NULL)
+	{
+		ft_strcpy(buff, "Get current dir failure, cannot exec cd.");
+		return ;
+	}
+	if (chdir(dir) == -1)
+	{
+		ft_strcpy(buff, "Invalid directory");
+		return ;
+	}
+	if (getcwd(new_dir, PATH_MAX) == NULL)
+	{
+		ft_strcpy(buff, "Get new dir failure, cannot exec cd.");
+		return ;
+	}
+	if (ft_count_char(new_dir, '/') < ft_count_char(g_orig_dir, '/'))
+	{
+		ft_strcpy(buff, "Insufficient permissions");
+		if (chdir(old_dir))
+			ft_strcpy(dir, "Invalid directory");
+		return ;
+	}
+	ft_strcpy(buff, "Directory changed");
+}
+
 static bool	exec_simple_command(char *buff)
 {
 	char	**split;
@@ -83,26 +138,30 @@ static bool	exec_simple_command(char *buff)
 	}
 	else if (!ft_strcmp(COMMAND, "cd"))
 	{
-		if (chdir(split[1]))
-			ft_strcpy(buff, "Invalid directory");
+		builtin_cd(split[1], buff);
+		i = true ;
+	}
+	else if (!ft_strcmp(COMMAND, "mkdir"))
+	{
+		if (mkdir(split[1], S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1)
+			ft_dprintf(2, "mkdir failed !\n");
 		else
-			ft_strcpy(buff, "Directory changed");
+			ft_printf("Directory created\n");
 		i = true;
 	}
 	ft_2d_tab_free(split);
 	return (i);
 }
 
-static void	exec_advanced_cmd(char *buff, int client_socket)
+static void	exec_advanced_cmd(char *cmd, int client_socket)
 {
 	char	**split;
 	int		child_pid;
 	ssize_t	ret_send;
 	ssize_t	ret_read;
-	int	fd;
 	char	buf[4096];
 
-	split = ft_strsplit_blank(buff);
+	split = ft_strsplit_blank(cmd);
 	child_pid = fork();
 	if (child_pid == -1)
 	{
@@ -111,19 +170,17 @@ static void	exec_advanced_cmd(char *buff, int client_socket)
 	}
 	else if (child_pid == 0)
 	{
-		fd = open("./file", O_RDWR | O_CREAT | O_TRUNC, 0644);
 		if (dup2(client_socket, STDOUT_FILENO) == -1)
 			ft_error(FT_DUP2_ERROR);
 		if (dup2(client_socket, STDERR_FILENO) == -1)
 			ft_error(FT_DUP2_ERROR);
 		close(client_socket);
 		execv("/bin/ls", split);
-		while ((ret_read = read(client_socket, buf, 4096)) > 0)
+		while ((ret_read = read(client_socket, buf, sizeof(buf))) > 0 || ret_read != -1)
 		{
-			ret_send = send(client_socket, buff, 4096, 0);
+			ret_send = send(client_socket, buf, sizeof(buf), 0);
 			if (ret_send == -1)
 				ft_error(FT_SEND_ERROR);
-			ft_memset(buff, 0, 4096);
 		}
 		exit(0);
 	}
@@ -138,19 +195,19 @@ void	recv_from_client(int client_socket)
 	char	buff[BUFF_LEN];
 	ssize_t	ret_recv;
 	ssize_t	ret_send;
-	/*ssize_t	ret_read;*/
 
 	while (true)
 	{
 		ret_recv = BUFF_LEN;
-		ft_memset(&buff, 0, sizeof(buff));
+		ft_memset(buff, 0, sizeof(buff));
 		while (ret_recv == BUFF_LEN)
 		{
 			if ((ret_recv = recv(client_socket, buff, sizeof(buff) -1, 0)) < 0)
 				ft_error(FT_RECV_ERROR);
 			buff[ret_recv] = 0;
 		}
-		ft_printf(YELLOW"%s received\n"END, buff);
+		if (ft_strlen(buff))
+			ft_printf(YELLOW"%s received\n"END, buff);
 		if (!ft_strcmp(buff, "quit") || !ft_strlen(buff))
 			break ;
 
@@ -160,18 +217,6 @@ void	recv_from_client(int client_socket)
 				ft_error(FT_SEND_ERROR);
 		}
 		else
-		{
 			exec_advanced_cmd(buff, client_socket);
-			/*ret_read = read(client_socket, buff, BUFF_LEN -1);*/
-			
-			/*ft_printf("ret_read = %d\n", ret_read);*/
-			/*buff[ret_read] = 0;*/
-			/*if ((ret_send = send(client_socket, buff, ft_strlen(buff), 0) < 0))*/
-				/*ft_error(FT_SEND_ERROR);*/
-			/*ft_printf("ret_send = %d\n", ret_send);*/
-			
-			/*if (ret_read == -1)*/
-				/*perror("ret_read()");*/
-		}
 	}
 }

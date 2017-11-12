@@ -23,7 +23,7 @@
 ** La structure est remplie, on peut demander une connection avec connect()
 */
 
-static char	*g_cmds[] = {"ls", "cd", "get", "put", "pwd", "quit", NULL};
+static char	*g_cmds[] = {"ls", "cd", "get", "put", "pwd", "quit", "mkdir", NULL};
 
 int	create_client(char *addr, uint16_t port)
 {
@@ -37,7 +37,10 @@ int	create_client(char *addr, uint16_t port)
 		ft_error(FT_SOCKET_ERROR);
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
-	sin.sin_addr.s_addr = inet_addr(addr);
+	if (!ft_strcmp("localhost", addr))
+		sin.sin_addr.s_addr = inet_addr("127.0.0.1");
+	else
+		sin.sin_addr.s_addr = inet_addr(addr);
 	if ((connect(sock, (const struct sockaddr *)&sin, sizeof(sin))) == -1)
 		ft_error(FT_CONNECT_ERROR);
 	return (sock);
@@ -77,23 +80,25 @@ void	command(int sock)
 
 int	send_to_server(int sock, char *cmd)
 {
-	char	buff[4097];
+	char	buff[4096];
 	ssize_t	ret_recv;
 
-	ft_memset(&buff, 0, sizeof(buff));
 	ret_recv = 4096;
+	ft_memset(buff, 0, sizeof(buff));
 
 	if (ft_strcmp("quit", cmd) == 0 && ft_printf(YELLOW"ftp> Bye\n"END))
 		return (QUIT);
 	if(send(sock, cmd, strlen(cmd), 0) < 0)
 		ft_error(FT_SEND_ERROR);
-	while (ret_recv == 4096)
+	while (1)
 	{
 		if ((ret_recv = recv(sock, buff, 4096, 0)) < 0)
 			ft_error(FT_RECV_ERROR);
-		buff[ret_recv] = 0;
-		write(1, buff, ret_recv);
-		ft_printf("{%d}", ret_recv);
+		/*buff[ret_recv] = 0;*/
+		write(1, buff, (size_t)ret_recv);
+		/*ft_printf(PURPLE"{%d}"END, ret_recv);*/
+		if (ret_recv != sizeof(buff))
+			break ;
 	}
 	RC;
 	return (1);

@@ -12,23 +12,30 @@
 
 #include "common.h"
 
+char	g_orig_dir[PATH_MAX] = {0};
+
 int	main(int argc, char **argv)
 {
-	uint16_t	port;
-	int			client_socket;
+	uint16_t			port;
+	int					client_socket;
+	uint32_t			client_socket_len;
+	char				addr[INET_ADDRSTRLEN];
+	struct sockaddr_in	sin;
 
 	if (argc != 2)
 		usage(argv[0], SERVER);
 	port = is_port_valid(argv, SERVER);
 
+	if (getcwd(g_orig_dir, PATH_MAX) == NULL)
+		return (errno);
+
 	ft_printf(GREEN"FTP_SERVER started.\n"END);
 
 	client_socket = create_server(port);
 
-	/*stock_in_file(client_socket);*/
-	recv_from_client(client_socket);
+	dup_server(client_socket, sin, client_socket_len);
 
 	close(client_socket);
-	ft_printf(GREEN"FTP_SERVER closed.\n"END);
+	ft_printf(GREEN"Connexion closed.\n"END);
 	return (EXIT_SUCCESS);
 }
