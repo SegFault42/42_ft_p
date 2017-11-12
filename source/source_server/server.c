@@ -123,7 +123,29 @@ static void builtin_cd(char *dir, char *buff)
 	ft_strcpy(buff, "Directory changed");
 }
 
-static bool	exec_simple_command(char *buff)
+static void	cmd_get(char *buff, char *file, int client_socket)
+{
+	int	fd;
+	int	ret_send;
+	char buffer[4096];
+
+	ft_memset(buffer, 0, sizeof(buffer));
+	if ((fd = open(file, O_RDONLY)) == -1)
+	{
+		ft_strcpy(buff, "get failure !");
+		perror("open");
+		return ;
+	}
+	while (read(fd, buffer, 4096) > 0)
+	{
+		ret_send = send(client_socket, buffer, sizeof(buffer), 0);
+		if (ret_send == -1)
+			ft_strcpy(buff, "Send Failure");
+		ft_memset(buffer, 0, sizeof(buffer));
+	}
+}
+
+static bool	exec_simple_command(char *buff, int client_socket)
 {
 	char	**split;
 	bool	i;
@@ -144,9 +166,14 @@ static bool	exec_simple_command(char *buff)
 	else if (!ft_strcmp(COMMAND, "mkdir"))
 	{
 		if (mkdir(split[1], S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1)
-			ft_dprintf(2, "mkdir failed !\n");
+			ft_strcpy(buff, "mkdir failed !");
 		else
-			ft_printf("Directory created\n");
+			ft_strcpy(buff, "Directory created");
+		i = true;
+	}
+	else if (!ft_strcmp(COMMAND, "get"))
+	{
+		cmd_get(buff, split[1], client_socket);
 		i = true;
 	}
 	ft_2d_tab_free(split);
@@ -211,7 +238,7 @@ void	recv_from_client(int client_socket)
 		if (!ft_strcmp(buff, "quit") || !ft_strlen(buff))
 			break ;
 
-		if (exec_simple_command(buff) == true)
+		if (exec_simple_command(buff, client_socket) == true)
 		{
 			if ((ret_send = send(client_socket, buff, ft_strlen(buff), 0) < 0))
 				ft_error(FT_SEND_ERROR);
