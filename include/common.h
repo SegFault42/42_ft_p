@@ -38,6 +38,10 @@
 # define CLIENT	1
 # define QUIT	-1
 
+# define QUIET	-1
+
+# define MAX_CMD_LEN 1024
+
 # define COMMAND split[0]
 
 int		usage(char *argv, bool type);

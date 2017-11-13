@@ -143,25 +143,24 @@ static void	cmd_get(char *buff, char *file, int client_socket)
 			ft_strcpy(buff, "Send Failure");
 		ft_memset(buffer, 0, sizeof(buffer));
 	}
+	close(fd);
 }
 
-static bool	exec_simple_command(char *buff, int client_socket)
+static int8_t	exec_simple_command(char *buff, int client_socket)
 {
 	char	**split;
-	bool	i;
 
-	i = false;
 	split = ft_strsplit_blank(buff);
 	if (!ft_strcmp(COMMAND, "pwd"))
 	{
 		if (getcwd(buff, BUFF_LEN) == NULL)
 			ft_strcpy(buff, "Gerer le cas ou getcw a un long path"); // Ne pas oublier
-		i = true;
+		return (true);
 	}
 	else if (!ft_strcmp(COMMAND, "cd"))
 	{
 		builtin_cd(split[1], buff);
-		i = true ;
+		return (true);
 	}
 	else if (!ft_strcmp(COMMAND, "mkdir"))
 	{
@@ -169,15 +168,15 @@ static bool	exec_simple_command(char *buff, int client_socket)
 			ft_strcpy(buff, "mkdir failed !");
 		else
 			ft_strcpy(buff, "Directory created");
-		i = true;
+		return (true);
 	}
 	else if (!ft_strcmp(COMMAND, "get"))
 	{
 		cmd_get(buff, split[1], client_socket);
-		i = true;
+		return (QUIET);
 	}
 	ft_2d_tab_free(split);
-	return (i);
+	return (false);
 }
 
 static void	exec_advanced_cmd(char *cmd, int client_socket)
@@ -222,6 +221,7 @@ void	recv_from_client(int client_socket)
 	char	buff[BUFF_LEN];
 	ssize_t	ret_recv;
 	ssize_t	ret_send;
+	ssize_t	exec;;
 
 	while (true)
 	{
@@ -237,13 +237,19 @@ void	recv_from_client(int client_socket)
 			ft_printf(YELLOW"%s received\n"END, buff);
 		if (!ft_strcmp(buff, "quit") || !ft_strlen(buff))
 			break ;
-
-		if (exec_simple_command(buff, client_socket) == true)
+		exec = exec_simple_command(buff, client_socket);
+		if (exec == true)
 		{
 			if ((ret_send = send(client_socket, buff, ft_strlen(buff), 0) < 0))
 				ft_error(FT_SEND_ERROR);
 		}
-		else
+		else if (exec == QUIET)
+		{
+			if ((ret_send = send(client_socket, "\0", 1, 0) < 0))
+				ft_error(FT_SEND_ERROR);
+		}
+		else if (exec == false)
 			exec_advanced_cmd(buff, client_socket);
+
 	}
 }

@@ -80,26 +80,44 @@ void	command(int sock)
 
 int	send_to_server(int sock, char *cmd)
 {
-	char	buff[4096];
+	char	buff[4096 + 1];
 	ssize_t	ret_recv;
+	int		fd;
+	char	**split;
 
-	ret_recv = 4096;
+	fd = 0;
 	ft_memset(buff, 0, sizeof(buff));
 
-	if (ft_strcmp("quit", cmd) == 0 && ft_printf(YELLOW"ftp> Bye\n"END))
+	split = ft_strsplit_blank(cmd);
+	if (!ft_strcmp("quit", split[0]) && ft_printf(YELLOW"ftp> Bye\n"END))
+	{
+		ft_2d_tab_free(split);
 		return (QUIT);
+	}
+	else if (!ft_strcmp("get", split[0]))
+	{
+		if ((fd = open(split[1], O_CREAT | O_RDWR | O_TRUNC, 0644)) == -1)
+			ft_dprintf(2, "Open error (get)\n");
+		ft_2d_tab_free(split);
+	}
 	if(send(sock, cmd, strlen(cmd), 0) < 0)
 		ft_error(FT_SEND_ERROR);
 	while (1)
 	{
 		if ((ret_recv = recv(sock, buff, 4096, 0)) < 0)
 			ft_error(FT_RECV_ERROR);
-		/*buff[ret_recv] = 0;*/
-		write(1, buff, (size_t)ret_recv);
+		buff[ret_recv] = 0;
+		if (fd)
+			write(fd, buff, ft_strlen(buff));
+		else
+			write(1, buff, (size_t)ret_recv);
 		/*ft_printf(PURPLE"{%d}"END, ret_recv);*/
-		if (ret_recv != sizeof(buff))
+		if (ret_recv != sizeof(buff) -1 )
 			break ;
+		ft_memset(buff, 0, sizeof(buff));
 	}
+	if (fd)
+		close(fd);
 	RC;
 	return (1);
 }
