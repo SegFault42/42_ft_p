@@ -1,0 +1,61 @@
+1) Faire les fonctions qu'on appellera une seul fois.
+
+Init du client et du serveur.
+
+2) Faire une fonction qui recupere la commande dans le client.
+
+3) 3 fonctions principale :	a) fonction pour commande simple (cd, pwd, rm, mkdir, quit)
+							b) fonction pour commande avancer (ls et tout ce qui fait un execv)
+							c) fonction pour commande hard (get, put)
+
+Comment marche un client et un serveur :
+
+
+
+
+                   (Les 2 sont connecter)
+		|Client| <-------------------------> |Server|
+
+1) le Client envoie la commande au serveur pui il attend la reponse.
+2) le serveur recoie la commande
+3) le serveur traite la commande
+4) le serveur envoie la reponse
+5) le client recoie la reponse
+
+
+====================Client=======================
+
+fonction client_recup_commande
+{
+	lis sur STDIN
+
+	if (commande simple)
+	else if (commande medium)
+	else if (commande hard)
+	else (commade inconnue)
+}
+
+fonction commande simple 
+{
+	send(commande)
+
+	recv(reponse)
+
+	traitement(affichage ou stockage)
+}
+
+====================Serveur=======================
+
+fonctions server_recoi_cmd
+{
+	recv(commande)
+	else if (commande medium)
+	else if (commande hard)
+	else (commade inconnue)
+}
+
+fonctions commande_simple
+{
+	traitement de la commande
+	send(reponse)
+}

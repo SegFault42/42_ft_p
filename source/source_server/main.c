@@ -12,26 +12,28 @@
 
 #include "common.h"
 
-char	g_orig_dir[PATH_MAX] = {0};
+static char	g_orig_dir[PATH_MAX] = {0};
 
 int	main(int argc, char **argv)
 {
 	uint16_t			port;
 	int					client_socket;
 	uint32_t			client_socket_len;
-	char				addr[INET_ADDRSTRLEN];
+	/*char				addr[INET_ADDRSTRLEN];*/
 	struct sockaddr_in	sin;
 
 	if (argc != 2)
 		usage(argv[0], SERVER);
+	client_socket_len = 0;
+	ft_memset(&sin, 0, sizeof(sin));
 	port = is_port_valid(argv, SERVER);
 
 	if (getcwd(g_orig_dir, PATH_MAX) == NULL)
 		return (errno);
-
 	ft_printf(GREEN"FTP_SERVER started.\n"END);
-
 	client_socket = create_server(port);
+
+
 
 	dup_server(client_socket, sin, client_socket_len);
 

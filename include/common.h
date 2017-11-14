@@ -39,10 +39,18 @@
 # define QUIT	-1
 
 # define QUIET	-1
+# define ABORT	-2
 
-# define MAX_CMD_LEN 1024
+# define MAX_CMD_LEN	4096
+# define PATH_MAX		4096
+# define BUFF_LEN		1024
 
 # define COMMAND split[0]
+
+# define EASY 1
+# define MEDIUM 2
+# define HARD 3
+
 
 int		usage(char *argv, bool type);
 int		ft_error(int error);

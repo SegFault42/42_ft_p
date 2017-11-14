@@ -14,8 +14,8 @@
 
 int	main(int argc, char **argv)
 {
-	uint16_t			port;
-	int					sock;
+	uint16_t	port;
+	int			sock;
 
 	if (argc != 3)
 		usage(argv[0], CLIENT);
@@ -23,7 +23,7 @@ int	main(int argc, char **argv)
 	port = is_port_valid(argv, CLIENT);
 	sock = create_client(argv[1], port);
 
-	command(sock);
+	send_to_server(sock);
 
 	close(sock);
 	return (EXIT_SUCCESS);

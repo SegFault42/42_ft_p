@@ -16,6 +16,7 @@ CC		= clang
 FLAG	= -Weverything
 LFT		= ./libft/libft.a
 SRCS	=	./source/source_client/main.c\
+			./source/source_client/setup.c\
 			./source/source_client/client.c\
 			./source/error.c\
 			./source/port.c

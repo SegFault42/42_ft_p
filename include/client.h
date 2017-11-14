@@ -12,9 +12,22 @@
 
 #ifndef FT_CLIENT_H
 # define FT_CLIENT_H
-
+/*
+** setup.c
+*/
 int		create_client(char *addr, uint16_t port);
+/*
+** command.c
+*/
 void	command(int sock);
-int		send_to_server(int sock, char *buf);
+/*
+** client_to_server.c
+*/
+void	send_to_server(int sock);
+/*
+** exec_cmd.c
+*/
+int8_t	exec_quit(char **split);
+int	exec_get(char *comp_cmd, int sock);
 
 #endif
