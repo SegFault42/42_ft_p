@@ -211,6 +211,55 @@ static int8_t	exec_easy_cmd(int socket, char **split)
 	return (0);
 }
 
+static int8_t	exec_ls(int socket, char **split)
+{
+	int		child_pid;
+	char	buff[BUFF_SIZE + 1];
+	ssize_t	ret_send;
+	size_t	size;
+	struct stat	st;
+
+	child_pid = fork();
+	if (child_pid ==1)
+	{
+		perror("Can't fork");
+		exit(errno);
+	}
+	else if (child_pid == 0)
+	{
+		if (dup2(socket, STDOUT_FILENO) == -1)
+			ft_error(FT_DUP2_ERROR);
+		if (dup2(socket, STDERR_FILENO) == -1)
+			ft_error(FT_DUP2_ERROR);
+		close(socket);
+		execv("/bin/ls", split);
+		fstat(socket, &st);
+		size = st.st_size;
+		while (1)
+		{
+			ret_send = send(socket, buff, 4096, 0);
+			if (ret_send == -1)
+			{
+				ft_dprintf(2, RED"Send error\n"END);
+				break ;
+			}
+			size -= ret_send;
+			if (size == 0)
+				break;
+		}
+		exit(0);
+	}
+	else
+		wait4(child_pid, 0, 0, 0);
+	ft_printf("ls ok\n");
+}
+
+static int8_t	exec_medium_cmd(int socket, char **split)
+{
+	if (!ft_strcmp(split[0], "ls"))
+		exec_ls(socket, split);
+}
+
 void	recv_from_client(int socket)
 {
 	char	complete_cmd[MAX_CMD_LEN + 1];
@@ -227,9 +276,13 @@ void	recv_from_client(int socket)
 		complete_cmd[ret_recv] = 0;
 		split = ft_strsplit_blank(complete_cmd);
 		level_cmd = get_level_cmd(split[0]);
-		ft_printf("%s receveid\n", complete_cmd);
+		ft_printf(CYAN"%s receveid\n"END, complete_cmd);
 		if (level_cmd == EASY)
+		{
 			if (exec_easy_cmd(socket, split) == QUIT)
 				break ;
+		}
+		else if (level_cmd == MEDIUM)
+			exec_medium_cmd(socket, split);
 	}
 }

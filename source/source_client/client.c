@@ -17,6 +17,29 @@ static int8_t	easy_cmd(int socket, char *comp_cmd, char **split)
 	return (0);
 }
 
+static int8_t	medium_cmd(int socket, char *comp_cmd)
+{
+	ssize_t	ret_send;
+	ssize_t	ret_recv;
+	char	buff[4096 + 1];
+
+	ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
+	if (ret_send == -1)
+		ft_printf(RED"Send %s failure\n"END);
+	
+	while (1)
+	{
+		if ((ret_recv = recv(socket, buff, 4096, 0)) == -1)
+			ft_dprintf(2, RED"Recv Failure\n"END);
+		buff[ret_recv] = 0;
+		ft_printf("%s", buff);
+		ft_printf(RED"{%d}"END, ret_recv);
+		if (ret_recv != 4096)
+			sleep(1);
+	}
+	return (0);
+}
+
 static int8_t	cmd_exist(char **split)
 {
 	int8_t	incr;
@@ -64,9 +87,7 @@ void	send_to_server(int socket)
 			}
 		}
 		else if (level == MEDIUM)
-		{
-			ft_printf("MEDIUM\n");
-		}
+			medium_cmd(socket, buff);
 		else if (level == HARD)
 		{
 			ft_printf("HARD\n");

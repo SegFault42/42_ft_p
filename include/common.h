@@ -43,7 +43,7 @@
 
 # define MAX_CMD_LEN	4096
 # define PATH_MAX		4096
-# define BUFF_LEN		1024
+# define BUFF_LEN		4096
 
 # define COMMAND split[0]
 
