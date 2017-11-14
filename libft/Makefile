@@ -44,6 +44,7 @@ SRC = ft_memset.c ft_bzero.c ft_memcpy.c ft_memccpy.c ft_memmove.c ft_memchr.c \
 	  ft_print_2d_tab.c ft_check_int_overflow.c ft_count_char.c ft_strccmp.c \
 	  ft_strcdup.c ft_strclen.c ft_strccat.c ft_isspace.c \
 	  ft_trymalloc.c ft_error.c ft_set_2d_tab.c ft_strxcat.c ft_strsplit_blank.c\
+	  ft_str_erase_after_last.c ft_strrclen.c\
 
 OBJS = $(SRC:.c=.o)
 

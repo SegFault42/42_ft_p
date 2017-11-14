@@ -12,6 +12,12 @@
 
 #include "common.h"
 
+/*static void	prompt(int signal)*/
+/*{*/
+	/*if (signal == SIGINT)*/
+		/*ft_printf(YELLOW"\nftp> "END);*/
+/*}*/
+
 int	main(int argc, char **argv)
 {
 	uint16_t	port;
@@ -20,6 +26,7 @@ int	main(int argc, char **argv)
 	if (argc != 3)
 		usage(argv[0], CLIENT);
 
+	/*signal(SIGINT, prompt);*/
 	port = is_port_valid(argv, CLIENT);
 	sock = create_client(argv[1], port);
 

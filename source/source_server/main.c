@@ -12,7 +12,7 @@
 
 #include "common.h"
 
-static char	g_orig_dir[PATH_MAX] = {0};
+char	g_orig_dir[PATH_MAX] = {0};
 
 int	main(int argc, char **argv)
 {
@@ -29,7 +29,10 @@ int	main(int argc, char **argv)
 	port = is_port_valid(argv, SERVER);
 
 	if (getcwd(g_orig_dir, PATH_MAX) == NULL)
+	{
+		ft_printf(RED"Cannot get base directory\n"END);
 		return (errno);
+	}
 	ft_printf(GREEN"FTP_SERVER started.\n"END);
 	client_socket = create_server(port);
 

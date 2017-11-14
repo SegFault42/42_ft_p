@@ -142,5 +142,7 @@ void				ft_critical_error(uint8_t error);
 void				ft_set_2d_tab(char **tab, int size);
 void				ft_strxcat(char *dest, char *src, int x);
 char				**ft_strsplit_blank(char const *s);
+char				*ft_str_erase_after_last(char *str, char c);
+size_t				ft_strrclen(char *s, char c);
 
 #endif

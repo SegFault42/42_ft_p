@@ -15,9 +15,9 @@
 extern char	g_orig_dir[PATH_MAX];
 
 /*
-** bind() liason du socket au client
-** listen() ecoute les conexion entrante
-*/
+ ** bind() liason du socket au client
+ ** listen() ecoute les conexion entrante
+ */
 
 int	create_server(uint16_t port)
 {
@@ -91,19 +91,121 @@ static int8_t	get_level_cmd(char *str)
 	return (level);
 }
 
-static void	exec_pwd(int socket)
+static int8_t	check_right(char *path, char *buff)
+{
+	char	cur_dir[PATH_MAX];
+	char	new_dir[PATH_MAX];
+
+	if (getcwd(cur_dir, PATH_MAX) == NULL)
+	{
+		ft_strcpy(buff, RED"Get current dir failure, cannot exec cd."END);
+		return (-1);
+	}
+	if (chdir(path) == -1)
+	{
+		ft_strcpy(buff, RED"Failure : Invalid directory"END);
+		return (-1);
+	}
+	if (getcwd(new_dir, PATH_MAX) == NULL)
+	{
+		ft_strcpy(buff, RED"Get new dir failure, cannot exec cd."END);
+		return (-1);
+	}
+	if (ft_count_char(new_dir, '/') < ft_count_char(g_orig_dir, '/'))
+	{
+		ft_strcpy(buff, RED"Failure : Insufficient permissions"END);
+		if (chdir(cur_dir))
+			ft_strcpy(path, RED"Failure : Invalid directory"END);
+		return (0);
+	}
+	if (chdir(cur_dir))
+		ft_strcpy(path, RED"Failure : Invalid directory"END);
+	return (1);
+}
+
+static void	exec_pwd(int socket, char **split)
 {
 	char	buff[PATH_MAX];
 
-	if (getcwd(buff, PATH_MAX) == NULL)
+	if (ft_count_2d_tab(split) != 1)
+		ft_strcpy(buff, RED"Failure : Too many argument"END);
+	else if (getcwd(buff, PATH_MAX) == NULL)
 		ft_strcpy(buff, "getcwd Failure");
+	send(socket, buff, ft_strlen(buff), 0);
+}
+
+static void	exec_cd(int socket, char **split)
+{
+	char	buff[PATH_MAX];
+	int8_t	ret;
+
+	if (ft_count_2d_tab(split) > 2)
+		ft_strcpy(buff, RED"Failure : Too many argument"END);
+	else if (ft_count_2d_tab(split) == 1)
+	{
+		if (chdir(g_orig_dir) == -1)
+			ft_strcpy(buff, RED"Failure : Changing directory"END);
+		else
+			ft_strcpy(buff, GREEN"Directory changed"END);
+	}
+	else if ((ret = check_right(split[1], buff)) == true)
+	{
+		if (chdir(split[1]) == -1)
+			ft_strcpy(buff, RED"Failure : Changing directory"END);
+		else
+			ft_strcpy(buff, GREEN"Directory changed"END);
+	}
+	else if (ret == false)
+		ft_strcpy(buff, RED"Failure : Insufficient permissions"END);
+	send(socket, buff, ft_strlen(buff), 0);
+}
+
+static void	exec_mkdir(int socket, char **split)
+{
+	char	buff[PATH_MAX];
+	int8_t	ret;
+	char	*directory;
+
+	if (ft_count_2d_tab(split) > 2)
+		ft_strcpy(buff, RED"Failure : Too many argument"END);
+	else if (ft_count_2d_tab(split) == 1)
+		ft_strcpy(buff, RED"Failure : Too few argument"END);
+	else
+	{
+		directory = ft_strdup(split[1]);
+		if ((directory = ft_str_erase_after_last(directory, '/')) == NULL)
+			ft_strcpy(buff, RED"Failure : Malloc error"END);
+		ft_printf("dir = %s\n", directory);
+		if (directory == NULL)
+			ret = 1;
+		else
+			ret = check_right(directory, buff);
+		ft_strdel(&directory);
+		ft_printf("ret = %d\n", ret);
+		if (ret == 1)
+		{
+			if (mkdir(split[1], 0644) == -1)
+			{
+				if (errno == EEXIST)
+					ft_strcpy(buff, RED"Failure : Directory exist"END);
+				else
+					ft_strcpy(buff, RED"Failure : Creating directory"END);
+			}
+			else
+				ft_strcpy(buff, GREEN"Directory created"END);
+		}
+	}
 	send(socket, buff, ft_strlen(buff), 0);
 }
 
 static int8_t	exec_easy_cmd(int socket, char **split)
 {
 	if (!ft_strcmp(split[0], "pwd"))
-		exec_pwd(socket);
+		exec_pwd(socket, split);
+	else if (!ft_strcmp(split[0], "cd"))
+		exec_cd(socket, split);
+	else if (!ft_strcmp(split[0], "mkdir"))
+		exec_mkdir(socket, split);
 	else if (!ft_strcmp(split[0], "quit"))
 		return (QUIT);
 	return (0);
@@ -116,6 +218,8 @@ void	recv_from_client(int socket)
 	int8_t	level_cmd;
 	char	**split;
 
+
+	ft_printf("path = %s\n", g_orig_dir);
 	while (true)
 	{
 		if ((ret_recv = recv(socket, complete_cmd, MAX_CMD_LEN, 0)) == -1)
@@ -123,6 +227,7 @@ void	recv_from_client(int socket)
 		complete_cmd[ret_recv] = 0;
 		split = ft_strsplit_blank(complete_cmd);
 		level_cmd = get_level_cmd(split[0]);
+		ft_printf("%s receveid\n", complete_cmd);
 		if (level_cmd == EASY)
 			if (exec_easy_cmd(socket, split) == QUIT)
 				break ;

@@ -13,14 +13,14 @@
 #ifndef COLORS_H
 # define COLORS_H
 
-# define BLACK		"\033[30m"
+# define BLACK		"\033[38;5;16m"
 # define RED		"\033[38;5;196m"
-# define GREEN		"\033[32m"
-# define YELLOW		"\033[33m"
-# define BLUE		"\033[34m"
-# define PURPLE		"\033[35m"
-# define CYAN		"\033[36m"
-# define WHITE		"\033[37m"
+# define GREEN		"\033[38;5;46m"
+# define YELLOW		"\033[38;5;226m"
+# define BLUE		"\033[38;5;27m"
+# define PURPLE		"\033[38;5;129m"
+# define CYAN		"\033[38;5;51m"
+# define WHITE		"\033[38;5;15m"
 # define ORANGE		"\033[38;5;208m"
 # define PINK		"\033[38;5;13m"
 # define GREY		"\033[38;5;246m"
