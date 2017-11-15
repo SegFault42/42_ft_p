@@ -28,6 +28,6 @@ void	send_to_server(int sock);
 ** exec_cmd.c
 */
 int8_t	exec_quit(char **split);
-int	exec_get(char *comp_cmd, int sock);
+//int	exec_get(char *comp_cmd, int sock);
 
 #endif

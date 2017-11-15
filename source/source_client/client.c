@@ -26,16 +26,57 @@ static int8_t	medium_cmd(int socket, char *comp_cmd)
 	ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
 	if (ret_send == -1)
 		ft_printf(RED"Send %s failure\n"END);
-	
-	while (1)
+	else
 	{
-		if ((ret_recv = recv(socket, buff, 4096, 0)) == -1)
-			ft_dprintf(2, RED"Recv Failure\n"END);
-		buff[ret_recv] = 0;
-		ft_printf("%s", buff);
-		ft_printf(RED"{%d}"END, ret_recv);
-		if (ret_recv != 4096)
-			sleep(1);
+		while (1)
+		{
+			if ((ret_recv = recv(socket, buff, 4096, 0)) == -1)
+				ft_dprintf(2, RED"Recv Failure\n"END);
+			buff[ret_recv] = 0;
+			if (ft_strstr(buff, KEY))
+			{
+				buff[ret_recv - 64] = 0;
+				ft_printf("%s", buff);
+				break ;
+			}
+			ft_printf("%s", buff);
+		}
+	}
+	return (0);
+}
+
+static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
+{
+	ssize_t	ret_send;
+	ssize_t	ret_recv;
+	char	buff[4096];
+	int		fd;
+
+	ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
+	if (ret_send == -1)
+		ft_printf(RED"Send %s failure\n"END);
+	else
+	{
+		fd = open(split[1], O_RDWR | O_CREAT | O_TRUNC, 0644);
+		if (fd == -1)
+			ft_dprintf(2, "Open error\n");
+		while (1)
+		{
+			if ((ret_recv = recv(socket, buff, 4096, 0)) == -1)
+				ft_dprintf(2, RED"Recv Failure\n"END);
+			if (ret_recv != 4096 || !ft_strcmp(KEY, buff))
+			{
+				/*buff[ret_recv - 64] = 0;*/
+				if (ft_memcmp(KEY, buff, 64) != 0)
+					write(fd, &buff, (size_t)ret_recv);
+				else
+					write(1, &buff, 4096);
+				break ;
+			}
+			write(fd, &buff, (size_t)ret_recv);
+			ft_memset(buff, 0, 4096);
+		}
+		RC;
 	}
 	return (0);
 }
@@ -89,9 +130,7 @@ void	send_to_server(int socket)
 		else if (level == MEDIUM)
 			medium_cmd(socket, buff);
 		else if (level == HARD)
-		{
-			ft_printf("HARD\n");
-		}
+			hard_cmd(socket, buff, split);
 		else
 			ft_dprintf(2, RED"Unknow command !\n"END);
 		ft_2d_tab_free(split);

@@ -51,6 +51,8 @@
 # define MEDIUM 2
 # define HARD 3
 
+# define KEY "4UxEc64YRrtCxP5qadBgmB4hL5g99uEZceeiKzQmDHbT3D6UkZAQJJBBgkdgVff7"
+# define KEY_FAILURE "NumAubusYnr8xXTptmmhxd5qq5UZBTTo8MHgzkgqYEcEaiWBr4y8iPnf9XtvR276"
 
 int		usage(char *argv, bool type);
 int		ft_error(int error);

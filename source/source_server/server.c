@@ -12,7 +12,7 @@
 
 #include "common.h"
 
-extern char	g_orig_dir[PATH_MAX];
+char	g_orig_dir[PATH_MAX];
 
 /*
  ** bind() liason du socket au client
@@ -216,7 +216,7 @@ static int8_t	exec_ls(int socket, char **split)
 	int		child_pid;
 	char	buff[BUFF_SIZE + 1];
 	ssize_t	ret_send;
-	size_t	size;
+	ssize_t	size;
 	struct stat	st;
 
 	child_pid = fork();
@@ -234,7 +234,7 @@ static int8_t	exec_ls(int socket, char **split)
 		close(socket);
 		execv("/bin/ls", split);
 		fstat(socket, &st);
-		size = st.st_size;
+		size = (ssize_t)st.st_size;
 		while (1)
 		{
 			ret_send = send(socket, buff, 4096, 0);
@@ -251,13 +251,59 @@ static int8_t	exec_ls(int socket, char **split)
 	}
 	else
 		wait4(child_pid, 0, 0, 0);
-	ft_printf("ls ok\n");
 }
 
 static int8_t	exec_medium_cmd(int socket, char **split)
 {
 	if (!ft_strcmp(split[0], "ls"))
 		exec_ls(socket, split);
+	send(socket, KEY, 64, 0);
+}
+
+static int8_t	exec_get(int socket, char **split)
+{
+	int		fd;
+	char	buffer[4096];
+	ssize_t	ret_send;
+	size_t	ret_read;
+	ssize_t	size;
+	struct stat	st;
+
+	/*if (ft_count_2d_tab(split) != 2)*/
+	if ((fd = open(split[1], O_RDONLY)) == -1)
+		send(socket, KEY, 64, 0);
+	else
+	{
+		fstat(fd, &st);
+		size = (ssize_t)st.st_size;
+		ft_printf("size = %d\n", size);
+		while (size > 0)
+		{
+			ret_read = read(fd, buffer, sizeof(buffer));
+			ft_printf("ret = %d", ret_read);
+			if (ret_read > 0)
+			{
+				ft_printf("buff = %s\n", buffer);
+				ret_send = send(socket, buffer, ret_read, 0);
+				ft_memset(buffer, 0, sizeof(buffer));
+			}
+			size -= ret_read;
+		}
+		if (!(st.st_size % 4096))
+			send(socket, KEY, 64, 0);
+		close(fd);
+	}
+	/*if (fd > 0)*/
+		/*send(socket, KEY, 64, 0);*/
+	/*else*/
+		/*send(socket, KEY_FAILURE, 64, 0);*/
+}
+
+static int8_t	exec_hard_cmd(int socket, char **split)
+{
+	if (!ft_strcmp(split[0], "get"))
+		exec_get(socket, split);
+	/*send(socket, KEY, 64, 0);*/
 }
 
 void	recv_from_client(int socket)
@@ -280,9 +326,15 @@ void	recv_from_client(int socket)
 		if (level_cmd == EASY)
 		{
 			if (exec_easy_cmd(socket, split) == QUIT)
+			{
+				ft_2d_tab_free(split);
 				break ;
+			}
 		}
 		else if (level_cmd == MEDIUM)
 			exec_medium_cmd(socket, split);
+		else if (level_cmd == HARD)
+			exec_hard_cmd(socket, split);
+		ft_2d_tab_free(split);
 	}
 }
