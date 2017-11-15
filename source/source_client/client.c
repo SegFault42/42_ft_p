@@ -45,18 +45,13 @@ static int8_t	medium_cmd(int socket, char *comp_cmd)
 	return (0);
 }
 
-static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
+static int8_t	get_cmd(int socket, char *comp_cmd, char **split)
 {
 	ssize_t	ret_send;
 	ssize_t	ret_recv;
 	char	buff[4096];
 	int		fd;
 
-	ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
-	if (ret_send == -1)
-		ft_printf(RED"Send %s failure\n"END);
-	else
-	{
 		fd = open(split[1], O_RDWR | O_CREAT | O_TRUNC, 0644);
 		if (fd == -1)
 			ft_dprintf(2, "Open error\n");
@@ -77,8 +72,28 @@ static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
 			ft_memset(buff, 0, 4096);
 		}
 		RC;
-	}
 	return (0);
+}
+
+static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
+{
+	char	buffer[4096];
+	ssize_t	ret_send;
+
+	ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
+	if (ret_send == -1)
+	{
+		ft_printf(RED"Send %s failure\n"END);
+		return (-1);
+	}
+	recv(socket, buffer, sizeof(buffer), 0);
+	if (!ft_strcmp(buffer, "SUCCESS"))
+	{
+		if (!ft_strcmp(split[1], "get"))
+			get_cmd(socket, comp_cmd, split);
+	}
+	else
+		ft_printf("%s\n", buffer);
 }
 
 static int8_t	cmd_exist(char **split)

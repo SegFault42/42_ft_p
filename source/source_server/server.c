@@ -67,6 +67,20 @@ void	dup_server(int client_socket, struct sockaddr_in sin, uint32_t client_socke
 	}
 }
 
+static char	*get_directory(char **split)
+{
+	char	*directory;
+
+	directory = ft_strdup(split[1]);
+	if ((directory = ft_str_erase_after_last(directory, '/')) == NULL)
+	{
+		ft_dprintf(2, RED"Failure : Malloc error"END);
+		return (NULL);
+	}
+	ft_printf(YELLOW"%s\n"END, directory);
+	return (directory);
+}
+
 static int8_t	get_level_cmd(char *str)
 {
 	int8_t	incr;
@@ -98,7 +112,7 @@ static int8_t	check_right(char *path, char *buff)
 
 	if (getcwd(cur_dir, PATH_MAX) == NULL)
 	{
-		ft_strcpy(buff, RED"Get current dir failure, cannot exec cd."END);
+		ft_strcpy(buff, RED"Get current dir failure."END);
 		return (-1);
 	}
 	if (chdir(path) == -1)
@@ -108,7 +122,7 @@ static int8_t	check_right(char *path, char *buff)
 	}
 	if (getcwd(new_dir, PATH_MAX) == NULL)
 	{
-		ft_strcpy(buff, RED"Get new dir failure, cannot exec cd."END);
+		ft_strcpy(buff, RED"Get new dir failure."END);
 		return (-1);
 	}
 	if (ft_count_char(new_dir, '/') < ft_count_char(g_orig_dir, '/'))
@@ -172,10 +186,7 @@ static void	exec_mkdir(int socket, char **split)
 		ft_strcpy(buff, RED"Failure : Too few argument"END);
 	else
 	{
-		directory = ft_strdup(split[1]);
-		if ((directory = ft_str_erase_after_last(directory, '/')) == NULL)
-			ft_strcpy(buff, RED"Failure : Malloc error"END);
-		ft_printf("dir = %s\n", directory);
+		directory = get_directory(split);
 		if (directory == NULL)
 			ret = 1;
 		else
@@ -184,7 +195,7 @@ static void	exec_mkdir(int socket, char **split)
 		ft_printf("ret = %d\n", ret);
 		if (ret == 1)
 		{
-			if (mkdir(split[1], 0644) == -1)
+			if (mkdir(split[1], 0744) == -1)
 			{
 				if (errno == EEXIST)
 					ft_strcpy(buff, RED"Failure : Directory exist"END);
@@ -301,6 +312,24 @@ static int8_t	exec_get(int socket, char **split)
 
 static int8_t	exec_hard_cmd(int socket, char **split)
 {
+	char	*directory;
+	char	buff[4096];
+
+	if (ft_strchr(split[1], '/'))
+	{
+		directory = get_directory(split);
+		if (check_right(directory, buff) != 1)
+		{
+			ft_printf("%s\n", buff);
+			send(socket, buff, sizeof(buff), 0);
+			return (0);
+		}
+		ft_strdel(&directory);
+	}
+	else
+	{
+		send(socket, "SUCCESS", sizeof(buff), 0);
+	}
 	if (!ft_strcmp(split[0], "get"))
 		exec_get(socket, split);
 	/*send(socket, KEY, 64, 0);*/
