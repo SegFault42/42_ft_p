@@ -45,34 +45,30 @@ static int8_t	medium_cmd(int socket, char *comp_cmd)
 	return (0);
 }
 
-static int8_t	get_cmd(int socket, char *comp_cmd, char **split)
+static int	check_right_writing(int socket, char *split)
 {
-	ssize_t	ret_send;
-	ssize_t	ret_recv;
-	char	buff[4096];
+	int		fd;
+	char	buffer[4096];
+
+	fd = open(extract_name_from_path(split), O_RDWR | O_CREAT | O_TRUNC, 0644);
+	ft_printf(ORANGE"name = %s\n"END, extract_name_from_path(split));
+	if (fd == -1)
+		ft_strcpy(buffer, "ERROR");
+	else
+		ft_strcpy(buffer, "SUCCESS");
+	ft_printf(ORANGE"%s\n"END, buffer);
+	send(socket, buffer, sizeof(buffer), 0);
+	return (fd);
+}
+
+static void	get_cmd(int socket, char **split)
+{
+	char	buffer[4096];
 	int		fd;
 
-		fd = open(split[1], O_RDWR | O_CREAT | O_TRUNC, 0644);
-		if (fd == -1)
-			ft_dprintf(2, "Open error\n");
-		while (1)
-		{
-			if ((ret_recv = recv(socket, buff, 4096, 0)) == -1)
-				ft_dprintf(2, RED"Recv Failure\n"END);
-			if (ret_recv != 4096 || !ft_strcmp(KEY, buff))
-			{
-				/*buff[ret_recv - 64] = 0;*/
-				if (ft_memcmp(KEY, buff, 64) != 0)
-					write(fd, &buff, (size_t)ret_recv);
-				else
-					write(1, &buff, 4096);
-				break ;
-			}
-			write(fd, &buff, (size_t)ret_recv);
-			ft_memset(buff, 0, 4096);
-		}
-		RC;
-	return (0);
+	if ((fd = check_right_writing(socket, split[1])) == -1)
+		return ;
+	ft_printf(ORANGE"begin recv from server\n"END);
 }
 
 static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
@@ -80,20 +76,22 @@ static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
 	char	buffer[4096];
 	ssize_t	ret_send;
 
-	ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
-	if (ret_send == -1)
+	if ((ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0)) == -1)
 	{
 		ft_printf(RED"Send %s failure\n"END);
 		return (-1);
 	}
+
 	recv(socket, buffer, sizeof(buffer), 0);
+
 	if (!ft_strcmp(buffer, "SUCCESS"))
-	{
-		if (!ft_strcmp(split[1], "get"))
-			get_cmd(socket, comp_cmd, split);
+	{ //  HEre verfi for file ok
+		if (!ft_strcmp(split[0], "get"))
+			get_cmd(socket, split);
 	}
 	else
 		ft_printf("%s\n", buffer);
+	return (0);
 }
 
 static int8_t	cmd_exist(char **split)

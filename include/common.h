@@ -58,4 +58,6 @@ int		usage(char *argv, bool type);
 int		ft_error(int error);
 uint16_t	is_port_valid(char **argv, bool type);
 
+char	*extract_name_from_path(char *path);
+
 #endif

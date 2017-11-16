@@ -18,6 +18,7 @@ LFT		= ./libft/libft.a
 SRCS	=	./source/source_server/main.c\
 			./source/source_server/server.c\
 			./source/error.c\
+			./source/common.c\
 			./source/port.c
 
 OBJS	= $(SRCS:.c=.o)

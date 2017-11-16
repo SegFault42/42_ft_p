@@ -222,7 +222,7 @@ static int8_t	exec_easy_cmd(int socket, char **split)
 	return (0);
 }
 
-static int8_t	exec_ls(int socket, char **split)
+static void	exec_ls(int socket, char **split)
 {
 	int		child_pid;
 	char	buff[BUFF_SIZE + 1];
@@ -264,75 +264,81 @@ static int8_t	exec_ls(int socket, char **split)
 		wait4(child_pid, 0, 0, 0);
 }
 
-static int8_t	exec_medium_cmd(int socket, char **split)
+static void	exec_medium_cmd(int socket, char **split)
 {
 	if (!ft_strcmp(split[0], "ls"))
 		exec_ls(socket, split);
 	send(socket, KEY, 64, 0);
 }
 
-static int8_t	exec_get(int socket, char **split)
+static int	check_file_exist(char *file, char *buff)
 {
 	int		fd;
-	char	buffer[4096];
-	ssize_t	ret_send;
-	size_t	ret_read;
-	ssize_t	size;
 	struct stat	st;
 
-	/*if (ft_count_2d_tab(split) != 2)*/
-	if ((fd = open(split[1], O_RDONLY)) == -1)
-		send(socket, KEY, 64, 0);
-	else
+	if ((fd = open(file, O_RDONLY)) == -1)
 	{
-		fstat(fd, &st);
-		size = (ssize_t)st.st_size;
-		ft_printf("size = %d\n", size);
-		while (size > 0)
-		{
-			ret_read = read(fd, buffer, sizeof(buffer));
-			ft_printf("ret = %d", ret_read);
-			if (ret_read > 0)
-			{
-				ft_printf("buff = %s\n", buffer);
-				ret_send = send(socket, buffer, ret_read, 0);
-				ft_memset(buffer, 0, sizeof(buffer));
-			}
-			size -= ret_read;
-		}
-		if (!(st.st_size % 4096))
-			send(socket, KEY, 64, 0);
-		close(fd);
+		ft_strcpy(buff, RED"Getting file error"END);
+		return (-1);
 	}
-	/*if (fd > 0)*/
-		/*send(socket, KEY, 64, 0);*/
-	/*else*/
-		/*send(socket, KEY_FAILURE, 64, 0);*/
+	if (fstat(fd, &st) == -1)
+	{
+		ft_strcpy(buff, RED"fstat error"END);
+		return (-1);
+	}
+	if (!S_ISREG(st.st_mode))
+	{
+		ft_strcpy(buff, RED"Not a regular file"END);
+		return (-1);
+	}
+	return (fd);
 }
 
-static int8_t	exec_hard_cmd(int socket, char **split)
+static int8_t	check_right_client(int socket)
 {
-	char	*directory;
-	char	buff[4096];
+	char	buffer[4096];
 
-	if (ft_strchr(split[1], '/'))
+	recv(socket, buffer, sizeof(buffer), 0);
+	if (!ft_strcmp(buffer, "ERROR"))
+		return (false);
+	else
+		return (true);
+}
+
+static void	exec_get(int socket, char **split, int fd)
+{
+	char	buffer[4096];
+	ssize_t	ret_read;
+
+	if (check_right_client(socket) == false)
+		return ;
+	while ((ret_read = read(fd, buffer, sizeof(buffer))) > 0)
 	{
-		directory = get_directory(split);
-		if (check_right(directory, buff) != 1)
-		{
-			ft_printf("%s\n", buff);
-			send(socket, buff, sizeof(buff), 0);
-			return (0);
-		}
-		ft_strdel(&directory);
+		ft_printf(ORANGE"{%d}"END, ret_read);
+		write(1, &buffer, ret_read);
+	}
+}
+
+
+static void	exec_hard_cmd(int socket, char **split)
+{
+	char	buffer[4096];
+	int		fd;
+
+	if (check_right(split[1], buffer) == 0 ||
+		(fd = check_file_exist(split[1], buffer)) == -1)
+	{
+		send(socket, buffer, 4096, 0);
+		return;
 	}
 	else
 	{
-		send(socket, "SUCCESS", sizeof(buff), 0);
+		ft_strcpy(buffer, "SUCCESS");
+		send(socket, buffer, sizeof(buffer), 0);
+		if (!ft_strcmp(split[0], "get"))
+			exec_get(socket, split, fd);
+		close(fd);
 	}
-	if (!ft_strcmp(split[0], "get"))
-		exec_get(socket, split);
-	/*send(socket, KEY, 64, 0);*/
 }
 
 void	recv_from_client(int socket)

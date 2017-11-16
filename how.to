@@ -59,3 +59,27 @@ fonctions commande_simple
 	traitement de la commande
 	send(reponse)
 }
+
+=====================================================
+Round 2 :
+
+1) Le client envoie la requete au serveur et attend la reponse. OK
+
+2) Le serveur recoie la requete, puis il verfie:
+
+a) Droit d'acces au dossier dans lequel est le fichier.
+b) Verifie si c'est un fichier regulier.
+c) Si il a les droits de lecture sur le fichier.
+
+Une fois les 3 condifitons remplie, le serveur envoie au client le message SUCCESS, et il entre dans la focntion get.
+Sinon il envoie le message d'erreur. et quit la fonction get.
+
+3) Le client recois le message. Si ce n'est pas SUCCESS, le client quit la fonction hard.
+Sinon il entre dans la fonction get.
+
+4) Le client cree le fichier en question et il attend de recevoir le contenue
+pour remplire le fichier.
+
+En paralelle, le serveur envoie le contenue du fichier.
+
+

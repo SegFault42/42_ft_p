@@ -19,6 +19,7 @@ SRCS	=	./source/source_client/main.c\
 			./source/source_client/setup.c\
 			./source/source_client/client.c\
 			./source/error.c\
+			./source/common.c\
 			./source/port.c
 
 OBJS	= $(SRCS:.c=.o)
