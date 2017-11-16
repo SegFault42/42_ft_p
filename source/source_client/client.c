@@ -65,10 +65,22 @@ static void	get_cmd(int socket, char **split)
 {
 	char	buffer[4096];
 	int		fd;
+	ssize_t	ret_recv;
 
 	if ((fd = check_right_writing(socket, split[1])) == -1)
 		return ;
-	ft_printf(ORANGE"begin recv from server\n"END);
+	while (1)
+	{
+		ret_recv = recv(socket, buffer, sizeof(buffer), 0);
+		ft_printf(ORANGE"{%d}"END, ret_recv);
+		ft_debug();
+		write(1, &buffer, (size_t)ret_recv);
+		if (!ft_strcmp(buffer, KEY))
+			break ;
+		write(fd, &buffer, (size_t)ret_recv);
+		ft_memset(buffer, 0, sizeof(buffer));
+	}
+	ft_printf(GREEN"Transfert success\n"END);
 }
 
 static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
