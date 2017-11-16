@@ -309,19 +309,24 @@ static void	exec_get(int socket, char **split, int fd)
 {
 	char	buffer[4096];
 	ssize_t	ret_read;
+	ssize_t	ret_send = 0;
 
 	if (check_right_client(socket) == false)
 		return ;
 	while ((ret_read = read(fd, buffer, sizeof(buffer))) > 0)
 	{
-		send(socket, buffer, ret_read, 0);
-		ft_printf(ORANGE"{%d}"END, ret_read);
+		ret_send = send(socket, buffer, (size_t)ret_read, 0);
+		/*ft_printf(ORANGE"{%d}"END, ret_read);*/
 		/*write(1, &buffer, ret_read);*/
 	}
-	ft_memset(buffer, 0, sizeof(buffer));
-	ft_strcpy(buffer, KEY);
-	ret_read = send(socket, buffer, sizeof(buffer), 0);
-	ft_printf(ORANGE"ret_send = %d\n"END, ret_read);
+	ft_printf(ORANGE"ret_send = %d\n"END, ret_send);
+	if (ret_send == 4096)
+	{
+		ft_memset(buffer, 0, sizeof(buffer));
+		ft_strcpy(buffer, KEY);
+		ret_read = send(socket, buffer, 64, 0);
+	}
+	/*ft_printf(ORANGE"ret_send = %d\n"END, ret_read);*/
 	ft_printf(GREEN"Transfert success\n"END);
 }
 

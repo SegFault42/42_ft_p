@@ -72,13 +72,14 @@ static void	get_cmd(int socket, char **split)
 	while (1)
 	{
 		ret_recv = recv(socket, buffer, sizeof(buffer), 0);
-		ft_printf(ORANGE"{%d}"END, ret_recv);
-		ft_debug();
-		write(1, &buffer, (size_t)ret_recv);
-		if (!ft_strcmp(buffer, KEY))
+		/*ft_printf(ORANGE"{%d}"END, ret_recv);*/
+		/*write(1, &buffer, (size_t)ret_recv);*/
+		if (ret_recv == 64 && !ft_strcmp(buffer, KEY))
 			break ;
 		write(fd, &buffer, (size_t)ret_recv);
 		ft_memset(buffer, 0, sizeof(buffer));
+		if (ret_recv != 4096)
+			break ;
 	}
 	ft_printf(GREEN"Transfert success\n"END);
 }

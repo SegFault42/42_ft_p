@@ -83,3 +83,7 @@ pour remplire le fichier.
 En paralelle, le serveur envoie le contenue du fichier.
 
 
+==============================================
+erreur:
+
+Verif si les permissions sont identiques.
