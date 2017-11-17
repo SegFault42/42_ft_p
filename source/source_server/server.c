@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:26:50 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/08 04:58:27 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/17 15:55:54 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -305,28 +305,29 @@ static int8_t	check_right_client(int socket)
 		return (true);
 }
 
-static void	exec_get(int socket, char **split, int fd)
+static void	send_file_size(int socket, off_t st_size)
+{
+	char	*itoa;
+	ssize_t	ret_send;
+
+	itoa = ft_ltoa(st_size);
+	ret_send = send(socket, itoa, ft_strlen(itoa), 0);
+	ft_strdel(&itoa);
+}
+
+static void	exec_get(int socket, int fd)
 {
 	char	buffer[4096];
 	ssize_t	ret_read;
 	ssize_t	ret_send = 0;
+	struct stat	st;
 
 	if (check_right_client(socket) == false)
 		return ;
+	fstat(fd, &st);
+	send_file_size(socket, st.st_size);
 	while ((ret_read = read(fd, buffer, sizeof(buffer))) > 0)
-	{
 		ret_send = send(socket, buffer, (size_t)ret_read, 0);
-		/*ft_printf(ORANGE"{%d}"END, ret_read);*/
-		/*write(1, &buffer, ret_read);*/
-	}
-	ft_printf(ORANGE"ret_send = %d\n"END, ret_send);
-	if (ret_send == 4096)
-	{
-		ft_memset(buffer, 0, sizeof(buffer));
-		ft_strcpy(buffer, KEY);
-		ret_read = send(socket, buffer, 64, 0);
-	}
-	/*ft_printf(ORANGE"ret_send = %d\n"END, ret_read);*/
 	ft_printf(GREEN"Transfert success\n"END);
 }
 
@@ -347,7 +348,7 @@ static void	exec_hard_cmd(int socket, char **split)
 		ft_strcpy(buffer, "SUCCESS");
 		send(socket, buffer, sizeof(buffer), 0);
 		if (!ft_strcmp(split[0], "get"))
-			exec_get(socket, split, fd);
+			exec_get(socket, fd);
 		close(fd);
 	}
 }

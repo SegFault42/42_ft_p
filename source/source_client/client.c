@@ -61,26 +61,72 @@ static int	check_right_writing(int socket, char *split)
 	return (fd);
 }
 
+#define NB_BAR	size[1]
+#define START	time_[0]
+#define STOP	time_[1]
+
+static void	progress_bar(struct timeval start, struct timeval stop, ssize_t ret_recv, long size_total)
+{
+	time_t	timee;
+	time_t	utime;
+	long double	udelta;
+	long double add_char = size_total / 99;
+	static int x =0;
+
+	timee = stop.tv_sec - start.tv_sec;
+	utime = stop.tv_usec - start.tv_usec;
+	/*if (!last || stop.tv_sec - last > 0)*/
+	/*{*/
+		udelta = ((float)utime / (float)1000000) + timee;
+		/*last = stop.tv_sec;*/
+	/*}*/
+
+	/*s += offset; //keep save*/
+
+	while (ret_recv >= add_char)
+	{
+		ret_recv -= add_char;
+		x++;
+	}
+
+	if (ret_recv > BUFFER_SIZE)
+		write(1, "\033[1A", 4);
+
+	write(1, "[", 1);
+	print_n_char('X', x);
+	print_n_char(' ', 99 - x);
+	write(1, "]", 1);
+	printf(" %.3Lf ko/s il reste %i second\r\n", BUFFER_SIZE / udelta / 1000, (int) ((size_total - j) / (BUFFER_SIZE / udelta)));
+
+	t++;
+
+}
+
+
 static void	get_cmd(int socket, char **split)
 {
-	char	buffer[4096];
+	char	buffer[BUFFER_SIZE];
 	int		fd;
 	ssize_t	ret_recv;
+	long	size[2];
+	struct timeval	time_[2];
 
 	if ((fd = check_right_writing(socket, split[1])) == -1)
 		return ;
-	while (1)
+	recv(socket, buffer, sizeof(buffer), 0);
+	size[0] = ft_atol(buffer);
+	while (size[0] > 0)
 	{
+		gettimeofday(&START, NULL);
 		ret_recv = recv(socket, buffer, sizeof(buffer), 0);
-		/*ft_printf(ORANGE"{%d}"END, ret_recv);*/
-		/*write(1, &buffer, (size_t)ret_recv);*/
-		if (ret_recv == 64 && !ft_strcmp(buffer, KEY))
-			break ;
+		NB_BAR += ret_recv;
+		gettimeofday(&STOP, NULL);
+		NB_BAR = progress_bar(START, STOP, NB_BAR, size[0]);
 		write(fd, &buffer, (size_t)ret_recv);
 		ft_memset(buffer, 0, sizeof(buffer));
-		if (ret_recv != 4096)
-			break ;
+		size[0] -= ret_recv;
 	}
+	RC;
 	ft_printf(GREEN"Transfert success\n"END);
 }
 

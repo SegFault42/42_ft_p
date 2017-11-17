@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:16:13 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/08 01:16:33 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/17 16:38:12 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <sys/socket.h>
 # include <sys/wait.h>
 # include <sys/stat.h>
+# include <sys/time.h>
 # include <netdb.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
@@ -42,8 +43,11 @@
 # define ABORT	-2
 
 # define MAX_CMD_LEN	4096
-# define PATH_MAX		4096
+# ifdef __linux__
+	# define PATH_MAX		4096
+# endif
 # define BUFF_LEN		4096
+# define BUFFER_SIZE		4096
 
 # define COMMAND split[0]
 
@@ -51,8 +55,6 @@
 # define MEDIUM 2
 # define HARD 3
 
-# define KEY "4UxEc64YRrtCxP5qadBgmB4hL5g99uEZceeiKzQmDHbT3D6UkZAQJJBBgkdgVff7"
-# define KEY_FAILURE "NumAubusYnr8xXTptmmhxd5qq5UZBTTo8MHgzkgqYEcEaiWBr4y8iPnf9XtvR276"
 
 int		usage(char *argv, bool type);
 int		ft_error(int error);

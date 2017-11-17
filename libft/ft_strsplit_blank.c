@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_strsplit_blank.c                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2017/11/17 08:45:37 by rabougue          #+#    #+#             */
+/*   Updated: 2017/11/17 08:45:58 by rabougue         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "./includes/libft.h"
 
 static size_t	count_nb_tab(char const *s)
@@ -23,7 +35,7 @@ static size_t	count_nb_tab(char const *s)
 	return (nb_tab);
 }
 
-static void	fill_tab(char **tab, char const *str)
+static void		fill_tab(char **tab, char const *str)
 {
 	size_t	len;
 	int		i;
@@ -49,7 +61,7 @@ static void	fill_tab(char **tab, char const *str)
 	tab[j] = NULL;
 }
 
-char	**ft_strsplit_blank(char const *s)
+char			**ft_strsplit_blank(char const *s)
 {
 	char	**str;
 	size_t	nb_tab;
