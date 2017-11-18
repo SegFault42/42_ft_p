@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:26:50 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/18 09:58:01 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/18 18:24:29 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -284,29 +284,6 @@ static void	exec_medium_cmd(int socket, char **split)
 	send(socket, KEY, 64, 0);
 }
 
-static int	check_file_exist(char *file, char *buff)
-{
-	int		fd;
-	struct stat	st;
-
-	if ((fd = open(file, O_RDONLY)) == -1)
-	{
-		ft_strcpy(buff, RED"Getting file error"END);
-		return (-1);
-	}
-	if (fstat(fd, &st) == -1)
-	{
-		ft_strcpy(buff, RED"fstat error"END);
-		return (-1);
-	}
-	if (!S_ISREG(st.st_mode))
-	{
-		ft_strcpy(buff, RED"Not a regular file"END);
-		return (-1);
-	}
-	return (fd);
-}
-
 static int8_t	check_right_client(int socket)
 {
 	char	buffer[BUFFER_SIZE];
@@ -316,16 +293,6 @@ static int8_t	check_right_client(int socket)
 		return (false);
 	else
 		return (true);
-}
-
-static void	send_file_size(int socket, off_t st_size)
-{
-	char	*itoa;
-	ssize_t	ret_send;
-
-	itoa = ft_ltoa(st_size);
-	ret_send = send(socket, itoa, ft_strlen(itoa), 0);
-	ft_strdel(&itoa);
 }
 
 static void	exec_get(int socket, int fd)
@@ -344,8 +311,7 @@ static void	exec_get(int socket, int fd)
 	ft_printf(GREEN"Transfert success\n"END);
 }
 
-
-static void	exec_hard_cmd(int socket, char **split)
+static void	server_get(int socket, char **split)
 {
 	char	buffer[BUFFER_SIZE];
 	int		fd;
@@ -360,10 +326,39 @@ static void	exec_hard_cmd(int socket, char **split)
 	{
 		ft_strcpy(buffer, "SUCCESS");
 		send(socket, buffer, sizeof(buffer), 0);
-		if (!ft_strcmp(split[0], "get"))
-			exec_get(socket, fd);
+		exec_get(socket, fd);
 		close(fd);
 	}
+}
+
+static void	server_put(int socket, char **split)
+{
+	char	buffer[BUFFER_SIZE];
+	int		fd;
+	long	size;
+	ssize_t	ret_recv;
+
+	if ((fd = check_right_writing(socket, split[1])) == -1)
+		return ;
+	recv(socket, buffer, BUFFER_SIZE, 0);
+	size = ft_atol(buffer);
+	ft_printf("%d\n", size);
+	while (size > 0)
+	{
+		ret_recv = recv(socket, buffer, sizeof(buffer), 0);
+		size -= ret_recv;
+		write(fd, &buffer, ret_recv);
+	}
+	ft_printf(GREEN"Transfert success\n"END);
+}
+
+static void	exec_hard_cmd(int socket, char **split)
+{
+
+	if (!ft_strcmp(split[0], "get"))
+		server_get(socket, split);
+	else if (!ft_strcmp(split[0], "put"))
+		server_put(socket, split);
 }
 
 void	recv_from_client(int socket)

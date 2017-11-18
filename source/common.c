@@ -14,3 +14,50 @@ char	*extract_name_from_path(char *path)
 	return (file);
 }
 
+int	check_file_exist(char *file, char *buff)
+{
+	int		fd;
+	struct stat	st;
+
+	if ((fd = open(file, O_RDONLY)) == -1)
+	{
+		ft_strcpy(buff, RED"Getting file error"END);
+		return (-1);
+	}
+	if (fstat(fd, &st) == -1)
+	{
+		ft_strcpy(buff, RED"fstat error"END);
+		return (-1);
+	}
+	if (!S_ISREG(st.st_mode))
+	{
+		ft_strcpy(buff, RED"Not a regular file"END);
+		return (-1);
+	}
+	return (fd);
+}
+
+int	check_right_writing(int socket, char *split)
+{
+	int		fd;
+	char	buffer[BUFFER_SIZE];
+
+	fd = open(extract_name_from_path(split), O_RDWR | O_CREAT | O_TRUNC, 0644);
+	if (fd == -1)
+		ft_strcpy(buffer, "ERROR");
+	else
+		ft_strcpy(buffer, "SUCCESS");
+	send(socket, buffer, sizeof(buffer), 0);
+	return (fd);
+}
+
+void	send_file_size(int socket, off_t st_size)
+{
+	char	*itoa;
+	ssize_t	ret_send;
+
+	itoa = ft_ltoa(st_size);
+	ret_send = send(socket, itoa, ft_strlen(itoa), 0);
+	ft_strdel(&itoa);
+}
+

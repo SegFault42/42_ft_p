@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:16:13 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/18 08:18:11 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/18 14:54:39 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,5 +63,8 @@ int			usage(char *argv, bool type);
 int			ft_error(int error);
 uint16_t	is_port_valid(char **argv, bool type);
 char		*extract_name_from_path(char *path);
+int			check_file_exist(char *file, char *buff);
+int			check_right_writing(int socket, char *split);
+void		send_file_size(int socket, off_t st_size);
 
 #endif

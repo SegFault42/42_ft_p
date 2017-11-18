@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/18 08:10:41 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/18 09:14:24 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/18 15:08:05 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,20 +57,6 @@ static int8_t	medium_cmd(int socket, char *comp_cmd)
 	return (0);
 }
 
-static int	check_right_writing(int socket, char *split)
-{
-	int		fd;
-	char	buffer[BUFFER_SIZE];
-
-	fd = open(extract_name_from_path(split), O_RDWR | O_CREAT | O_TRUNC, 0644);
-	if (fd == -1)
-		ft_strcpy(buffer, "ERROR");
-	else
-		ft_strcpy(buffer, "SUCCESS");
-	send(socket, buffer, sizeof(buffer), 0);
-	return (fd);
-}
-
 static void	get_cmd(int socket, char **split)
 {
 	char	buffer[BUFFER_SIZE];
@@ -79,7 +65,10 @@ static void	get_cmd(int socket, char **split)
 	long	size;
 
 	if ((fd = check_right_writing(socket, split[1])) == -1)
+	{
+		ft_printf(RED"Permission denied\n"END);
 		return ;
+	}
 	recv(socket, buffer, sizeof(buffer), 0);
 	size = ft_atol(buffer);
 	while (size > 0)
@@ -93,7 +82,7 @@ static void	get_cmd(int socket, char **split)
 	ft_printf(GREEN"Transfert success\n"END);
 }
 
-static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
+static int8_t		client_get(int socket, char *comp_cmd, char **split)
 {
 	char	buffer[BUFFER_SIZE];
 	ssize_t	ret_send;
@@ -108,11 +97,63 @@ static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
 
 	if (!ft_strcmp(buffer, "SUCCESS"))
 	{ //  HEre verfi for file ok
-		if (!ft_strcmp(split[0], "get"))
-			get_cmd(socket, split);
+		get_cmd(socket, split);
 	}
 	else
 		ft_printf("%s\n", buffer);
+	return (0);
+}
+
+static void			exec_put(int socket, int fd)
+{
+	char	buffer[BUFFER_SIZE];
+	struct stat	st;
+	long	size;
+	ssize_t	ret_read;
+
+	fstat(fd, &st);
+	size = st.st_size;
+	send_file_size(socket, size);
+	while ((ret_read = read(fd, buffer, sizeof(buffer))) > 0)
+	{
+		send(socket, buffer, (size_t)ret_read, 0);
+	}
+	ft_printf(GREEN"Transfert success\n"END);
+}
+
+static int8_t		client_put(int socket, char *comp_cmd, char **split)
+{
+	int	fd;
+	char	buffer[BUFFER_SIZE];
+
+	ft_printf("put\n");
+	// 1st check if file exist and if i can open as read.
+	if ((fd = check_file_exist(split[1], buffer)) == -1)
+		ft_printf("%s\n", buffer);
+	send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
+
+	recv(socket, buffer, BUFFER_SIZE, 0);
+	if (!ft_strcmp(buffer, "ERROR"))
+	{
+		ft_dprintf(2, RED"Unable to write file in server side"END);
+		return (-1);
+	}
+	exec_put(socket, fd);
+
+	return (0);
+}
+
+static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
+{
+	if (!ft_strcmp(split[0], "get"))
+	{
+		if (client_get(socket, comp_cmd, split) == -1)
+			return (-1);
+	}
+	else if (!ft_strcmp(split[0], "put"))
+	{
+		client_put(socket, comp_cmd, split);
+	}
 	return (0);
 }
 
