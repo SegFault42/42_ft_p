@@ -6,7 +6,7 @@
 /*   By: rabougue <rabougue@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/11/24 18:34:24 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/17 10:14:54 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/18 08:54:51 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,5 +144,6 @@ void				ft_strxcat(char *dest, char *src, int x);
 char				**ft_strsplit_blank(char const *s);
 char				*ft_str_erase_after_last(char *str, char c);
 size_t				ft_strrclen(char *s, char c);
+void				ft_putnstr(char const *s, size_t nb);
 
 #endif

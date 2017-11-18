@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:26:50 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/17 15:55:54 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/18 09:58:01 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,8 @@ static char	*get_directory(char **split)
 {
 	char	*directory;
 
+	if (!ft_strchr(split[1], '/'))
+		return (NULL);
 	directory = ft_strdup(split[1]);
 	if ((directory = ft_str_erase_after_last(directory, '/')) == NULL)
 	{
@@ -110,6 +112,8 @@ static int8_t	check_right(char *path, char *buff)
 	char	cur_dir[PATH_MAX];
 	char	new_dir[PATH_MAX];
 
+	if (path == NULL)
+		return (1);
 	if (getcwd(cur_dir, PATH_MAX) == NULL)
 	{
 		ft_strcpy(buff, RED"Get current dir failure."END);
@@ -124,6 +128,15 @@ static int8_t	check_right(char *path, char *buff)
 	{
 		ft_strcpy(buff, RED"Get new dir failure."END);
 		return (-1);
+	}
+	ft_printf("cur_dir = %s\n", cur_dir);
+	ft_printf("new_dir = %s\n", new_dir);
+	if (ft_strncmp(cur_dir, new_dir, ft_strlen(cur_dir)))
+	{
+		ft_strcpy(buff, RED"Failure : Insufficient permissions"END);
+		if (chdir(cur_dir))
+			ft_strcpy(path, RED"Failure : Invalid directory"END);
+		return (0);
 	}
 	if (ft_count_char(new_dir, '/') < ft_count_char(g_orig_dir, '/'))
 	{
@@ -296,7 +309,7 @@ static int	check_file_exist(char *file, char *buff)
 
 static int8_t	check_right_client(int socket)
 {
-	char	buffer[4096];
+	char	buffer[BUFFER_SIZE];
 
 	recv(socket, buffer, sizeof(buffer), 0);
 	if (!ft_strcmp(buffer, "ERROR"))
@@ -317,7 +330,7 @@ static void	send_file_size(int socket, off_t st_size)
 
 static void	exec_get(int socket, int fd)
 {
-	char	buffer[4096];
+	char	buffer[BUFFER_SIZE];
 	ssize_t	ret_read;
 	ssize_t	ret_send = 0;
 	struct stat	st;
@@ -334,13 +347,13 @@ static void	exec_get(int socket, int fd)
 
 static void	exec_hard_cmd(int socket, char **split)
 {
-	char	buffer[4096];
+	char	buffer[BUFFER_SIZE];
 	int		fd;
 
-	if (check_right(split[1], buffer) == 0 ||
+	if (check_right(get_directory(split), buffer) != 1 ||
 		(fd = check_file_exist(split[1], buffer)) == -1)
 	{
-		send(socket, buffer, 4096, 0);
+		send(socket, buffer, sizeof(buffer), 0);
 		return;
 	}
 	else
@@ -359,7 +372,6 @@ void	recv_from_client(int socket)
 	ssize_t	ret_recv;
 	int8_t	level_cmd;
 	char	**split;
-
 
 	ft_printf("path = %s\n", g_orig_dir);
 	while (true)

@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:16:13 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/17 16:38:12 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/18 08:18:11 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,10 @@
 # include "./client.h"
 # include "./server.h"
 
+# ifdef __linux__
+	# define PATH_MAX		4096
+# endif
+
 # define FT_SOCKET_ERROR			-1
 # define FT_GET_PROTO_BY_NAME_ERROR	-2
 # define FT_BIND_ERROR				-3
@@ -42,12 +46,9 @@
 # define QUIET	-1
 # define ABORT	-2
 
-# define MAX_CMD_LEN	4096
-# ifdef __linux__
-	# define PATH_MAX		4096
-# endif
 # define BUFF_LEN		4096
-# define BUFFER_SIZE		4096
+# define BUFFER_SIZE	4096
+# define MAX_CMD_LEN	4096
 
 # define COMMAND split[0]
 
@@ -55,11 +56,12 @@
 # define MEDIUM 2
 # define HARD 3
 
+# define KEY "4UxEc64YRrtCxP5qadBgmB4hL5g99uEZceeiKzQmDHbT3D6UkZAQJJBBgkdgVff7"
+# define KEY_FAILURE "NumAubusYnr8xXTptmmhxd5qq5UZBTTo8MHgzkgqYEcEaiWBr4y8iPnf9XtvR276"
 
-int		usage(char *argv, bool type);
-int		ft_error(int error);
+int			usage(char *argv, bool type);
+int			ft_error(int error);
 uint16_t	is_port_valid(char **argv, bool type);
-
-char	*extract_name_from_path(char *path);
+char		*extract_name_from_path(char *path);
 
 #endif

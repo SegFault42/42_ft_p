@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   client.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2017/11/18 08:10:41 by rabougue          #+#    #+#             */
+/*   Updated: 2017/11/18 09:14:24 by rabougue         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "common.h"
 
 static int8_t	easy_cmd(int socket, char *comp_cmd, char **split)
@@ -48,83 +60,34 @@ static int8_t	medium_cmd(int socket, char *comp_cmd)
 static int	check_right_writing(int socket, char *split)
 {
 	int		fd;
-	char	buffer[4096];
+	char	buffer[BUFFER_SIZE];
 
 	fd = open(extract_name_from_path(split), O_RDWR | O_CREAT | O_TRUNC, 0644);
-	ft_printf(ORANGE"name = %s\n"END, extract_name_from_path(split));
 	if (fd == -1)
 		ft_strcpy(buffer, "ERROR");
 	else
 		ft_strcpy(buffer, "SUCCESS");
-	ft_printf(ORANGE"%s\n"END, buffer);
 	send(socket, buffer, sizeof(buffer), 0);
 	return (fd);
 }
-
-#define NB_BAR	size[1]
-#define START	time_[0]
-#define STOP	time_[1]
-
-static void	progress_bar(struct timeval start, struct timeval stop, ssize_t ret_recv, long size_total)
-{
-	time_t	timee;
-	time_t	utime;
-	long double	udelta;
-	long double add_char = size_total / 99;
-	static int x =0;
-
-	timee = stop.tv_sec - start.tv_sec;
-	utime = stop.tv_usec - start.tv_usec;
-	/*if (!last || stop.tv_sec - last > 0)*/
-	/*{*/
-		udelta = ((float)utime / (float)1000000) + timee;
-		/*last = stop.tv_sec;*/
-	/*}*/
-
-	/*s += offset; //keep save*/
-
-	while (ret_recv >= add_char)
-	{
-		ret_recv -= add_char;
-		x++;
-	}
-
-	if (ret_recv > BUFFER_SIZE)
-		write(1, "\033[1A", 4);
-
-	write(1, "[", 1);
-	print_n_char('X', x);
-	print_n_char(' ', 99 - x);
-	write(1, "]", 1);
-	printf(" %.3Lf ko/s il reste %i second\r\n", BUFFER_SIZE / udelta / 1000, (int) ((size_total - j) / (BUFFER_SIZE / udelta)));
-
-	t++;
-
-}
-
 
 static void	get_cmd(int socket, char **split)
 {
 	char	buffer[BUFFER_SIZE];
 	int		fd;
 	ssize_t	ret_recv;
-	long	size[2];
-	struct timeval	time_[2];
+	long	size;
 
 	if ((fd = check_right_writing(socket, split[1])) == -1)
 		return ;
 	recv(socket, buffer, sizeof(buffer), 0);
-	size[0] = ft_atol(buffer);
-	while (size[0] > 0)
+	size = ft_atol(buffer);
+	while (size > 0)
 	{
-		gettimeofday(&START, NULL);
 		ret_recv = recv(socket, buffer, sizeof(buffer), 0);
-		NB_BAR += ret_recv;
-		gettimeofday(&STOP, NULL);
-		NB_BAR = progress_bar(START, STOP, NB_BAR, size[0]);
 		write(fd, &buffer, (size_t)ret_recv);
 		ft_memset(buffer, 0, sizeof(buffer));
-		size[0] -= ret_recv;
+		size -= ret_recv;
 	}
 	RC;
 	ft_printf(GREEN"Transfert success\n"END);
@@ -132,7 +95,7 @@ static void	get_cmd(int socket, char **split)
 
 static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
 {
-	char	buffer[4096];
+	char	buffer[BUFFER_SIZE];
 	ssize_t	ret_send;
 
 	if ((ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0)) == -1)
