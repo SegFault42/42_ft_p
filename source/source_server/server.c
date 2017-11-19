@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:26:50 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/18 18:24:29 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/19 18:38:35 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ static int8_t	get_level_cmd(char *str)
 {
 	int8_t	incr;
 	int8_t	level;
-	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "ls", "get", "put", NULL};
+	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir",  "ls", "get", "put", NULL};
 
 	incr = 0;
 	level = 0;
@@ -95,9 +95,9 @@ static int8_t	get_level_cmd(char *str)
 	{
 		if (!ft_strcmp(cmd[incr], str))
 		{
-			if (incr <= 3)
+			if (incr <= 4)
 				level = EASY;
-			else if (incr == 4)
+			else if (incr == 5)
 				level = MEDIUM;
 			else
 				level = HARD;
@@ -131,7 +131,7 @@ static int8_t	check_right(char *path, char *buff)
 	}
 	ft_printf("cur_dir = %s\n", cur_dir);
 	ft_printf("new_dir = %s\n", new_dir);
-	if (ft_strncmp(cur_dir, new_dir, ft_strlen(cur_dir)))
+	if (ft_strncmp(g_orig_dir, new_dir, ft_strlen(g_orig_dir)))
 	{
 		ft_strcpy(buff, RED"Failure : Insufficient permissions"END);
 		if (chdir(cur_dir))
@@ -222,6 +222,27 @@ static void	exec_mkdir(int socket, char **split)
 	send(socket, buff, ft_strlen(buff), 0);
 }
 
+static void		exec_rmdir(int socket, char **split)
+{
+	char	buff[BUFFER_SIZE];
+
+	if (ft_count_2d_tab(split) > 2)
+		ft_strcpy(buff, RED"Failure : Too many argument"END);
+	else if (ft_count_2d_tab(split) == 1)
+		ft_strcpy(buff, RED"Failure : Too few argument"END);
+	else
+	{
+		if (check_right(split[1], buff) == 1)
+		{
+			if (rmdir(split[1]) == -1)
+				ft_strcpy(buff, RED"Directory not exist"END);
+			else
+				ft_strcpy(buff, GREEN"Directory removed"END);
+		}
+	}
+	send(socket, buff, ft_strlen(buff), 0);
+}
+
 static int8_t	exec_easy_cmd(int socket, char **split)
 {
 	if (!ft_strcmp(split[0], "pwd"))
@@ -230,6 +251,8 @@ static int8_t	exec_easy_cmd(int socket, char **split)
 		exec_cd(socket, split);
 	else if (!ft_strcmp(split[0], "mkdir"))
 		exec_mkdir(socket, split);
+	else if (!ft_strcmp(split[0], "rmdir"))
+		exec_rmdir(socket, split);
 	else if (!ft_strcmp(split[0], "quit"))
 		return (QUIT);
 	return (0);
@@ -337,7 +360,17 @@ static void	server_put(int socket, char **split)
 	int		fd;
 	long	size;
 	ssize_t	ret_recv;
+	char	*file;
 
+	file = extract_name_from_path(split[1]);
+	if ((fd = open(file, O_RDONLY)) != -1)
+	{
+		ft_printf(RED"File exist\n"END);
+		close(fd);
+		ft_strcpy(buffer, "ERROR");
+		send(socket, buffer, sizeof(buffer), 0);
+		return ;
+	}
 	if ((fd = check_right_writing(socket, split[1])) == -1)
 		return ;
 	recv(socket, buffer, BUFFER_SIZE, 0);
@@ -346,15 +379,14 @@ static void	server_put(int socket, char **split)
 	while (size > 0)
 	{
 		ret_recv = recv(socket, buffer, sizeof(buffer), 0);
+		write(fd, &buffer, (size_t)ret_recv);
 		size -= ret_recv;
-		write(fd, &buffer, ret_recv);
 	}
 	ft_printf(GREEN"Transfert success\n"END);
 }
 
 static void	exec_hard_cmd(int socket, char **split)
 {
-
 	if (!ft_strcmp(split[0], "get"))
 		server_get(socket, split);
 	else if (!ft_strcmp(split[0], "put"))

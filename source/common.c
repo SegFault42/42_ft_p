@@ -21,17 +21,20 @@ int	check_file_exist(char *file, char *buff)
 
 	if ((fd = open(file, O_RDONLY)) == -1)
 	{
-		ft_strcpy(buff, RED"Getting file error"END);
+		if (buff)
+			ft_strcpy(buff, RED"Getting file error"END);
 		return (-1);
 	}
 	if (fstat(fd, &st) == -1)
 	{
-		ft_strcpy(buff, RED"fstat error"END);
+		if (buff)
+			ft_strcpy(buff, RED"fstat error"END);
 		return (-1);
 	}
 	if (!S_ISREG(st.st_mode))
 	{
-		ft_strcpy(buff, RED"Not a regular file"END);
+		if (buff)
+			ft_strcpy(buff, RED"Not a regular file"END);
 		return (-1);
 	}
 	return (fd);

@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/18 08:10:41 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/18 15:08:05 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/19 18:22:52 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,15 +86,22 @@ static int8_t		client_get(int socket, char *comp_cmd, char **split)
 {
 	char	buffer[BUFFER_SIZE];
 	ssize_t	ret_send;
+	int		fd;
+	char	*file;
 
+	file = extract_name_from_path(split[1]);
+	if ((fd = open(file, O_RDONLY)) != -1)
+	{
+		ft_printf(RED"File exist\n"END);
+		close(fd);
+		return (-1);
+	}
 	if ((ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0)) == -1)
 	{
 		ft_printf(RED"Send %s failure\n"END);
 		return (-1);
 	}
-
 	recv(socket, buffer, sizeof(buffer), 0);
-
 	if (!ft_strcmp(buffer, "SUCCESS"))
 	{ //  HEre verfi for file ok
 		get_cmd(socket, split);
@@ -106,61 +113,69 @@ static int8_t		client_get(int socket, char *comp_cmd, char **split)
 
 static void			exec_put(int socket, int fd)
 {
-	char	buffer[BUFFER_SIZE];
+	char		buffer[BUFFER_SIZE];
 	struct stat	st;
-	long	size;
-	ssize_t	ret_read;
+	long		size;
+	ssize_t		ret_read;
 
 	fstat(fd, &st);
 	size = st.st_size;
 	send_file_size(socket, size);
 	while ((ret_read = read(fd, buffer, sizeof(buffer))) > 0)
-	{
 		send(socket, buffer, (size_t)ret_read, 0);
-	}
 	ft_printf(GREEN"Transfert success\n"END);
 }
 
 static int8_t		client_put(int socket, char *comp_cmd, char **split)
 {
-	int	fd;
+	int		fd;
 	char	buffer[BUFFER_SIZE];
 
 	ft_printf("put\n");
+
 	// 1st check if file exist and if i can open as read.
 	if ((fd = check_file_exist(split[1], buffer)) == -1)
+	{
 		ft_printf("%s\n", buffer);
+		return (-1);
+	}
 	send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
 
 	recv(socket, buffer, BUFFER_SIZE, 0);
 	if (!ft_strcmp(buffer, "ERROR"))
 	{
-		ft_dprintf(2, RED"Unable to write file in server side"END);
+		ft_dprintf(2, RED"Unable to write file in server side\n"END);
 		return (-1);
 	}
 	exec_put(socket, fd);
+	close(fd);
 
 	return (0);
 }
 
 static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
 {
+	if (ft_count_2d_tab(split) > 2)
+	{
+		ft_dprintf(2, RED"Failure : Too many argument\n"END);
+		return (-1);
+	}
+	else if (ft_count_2d_tab(split) == 1)
+	{
+		ft_dprintf(2, RED"Failure : Too few argument\n"END);
+		return (-1);
+	}
 	if (!ft_strcmp(split[0], "get"))
-	{
-		if (client_get(socket, comp_cmd, split) == -1)
-			return (-1);
-	}
+		return (client_get(socket, comp_cmd, split));
 	else if (!ft_strcmp(split[0], "put"))
-	{
-		client_put(socket, comp_cmd, split);
-	}
+		return (client_put(socket, comp_cmd, split));
 	return (0);
 }
 
 static int8_t	cmd_exist(char **split)
 {
 	int8_t	incr;
-	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "ls", "get", "put", NULL};
+	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir","ls", "get", "put", NULL};
 	int8_t	level;
 
 	incr = 0;
@@ -169,9 +184,9 @@ static int8_t	cmd_exist(char **split)
 	{
 		if (!ft_strcmp(cmd[incr], split[0]))
 		{
-			if (incr <= 3)
+			if (incr <= 4)
 				level = EASY;
-			else if (incr == 4)
+			else if (incr == 5)
 				level = MEDIUM;
 			else
 				level = HARD;
