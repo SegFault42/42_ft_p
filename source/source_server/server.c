@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:26:50 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/20 15:34:41 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/20 19:02:40 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -329,20 +329,44 @@ static int8_t	check_right_client(int socket)
 		return (true);
 }
 
+# define L_C(X, x1, x2, y1, y2) ((int)(((X - x1) * (y2 - y1)) / (x2 - x1)) + y1)
+
+static void	progress_bar(long int end, long int current)
+{
+	int x;
+
+	x = L_C(current, 0, end, 0, 99);
+	ft_putstr(YELLOW"[");
+	ft_putnstr(GREEN"-", x);
+	ft_putnstr(" ", 99 - x);
+	ft_putstr(YELLOW"]"END);
+}
+
+
 static void	exec_get(int socket, int fd)
 {
-	char	buffer[BUFFER_SIZE];
-	ssize_t	ret_read;
-	ssize_t	ret_send = 0;
+	char		buffer[BUFFER_SIZE];
+	ssize_t		ret_read;
+	ssize_t		ret_send;
 	struct stat	st;
+	long double	size_sent;
 
+	size_sent = 0;
+	ret_send = 0;
 	if (check_right_client(socket) == false)
 		return ;
 	fstat(fd, &st);
 	send_file_size(socket, st.st_size);
+	ft_printf("\033[?25l"); // Hide Cursor
 	while ((ret_read = read(fd, buffer, sizeof(buffer))) > 0)
+	{
 		ret_send = send(socket, buffer, (size_t)ret_read, 0);
-	ft_printf(GREEN"Transfert success\n"END);
+		size_sent += ret_send; 
+		progress_bar(st.st_size, (long) size_sent);
+		ft_printf("\r");
+	}
+	ft_printf("\033[?25h"); // Show Cursor
+	ft_printf(GREEN"\nTransfert success\n"END);
 }
 
 static void	server_get(int socket, char **split)

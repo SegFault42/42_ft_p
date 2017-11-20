@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:16:13 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/20 09:01:53 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/20 17:37:48 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 # include <errno.h>
 # include "./client.h"
 # include "./server.h"
+# include "./curses.h"
 
 # ifdef __linux__
 	# define PATH_MAX		4096

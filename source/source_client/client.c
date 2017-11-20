@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/18 08:10:41 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/20 16:19:23 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/20 18:45:15 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,7 +205,7 @@ void	send_to_server(int socket)
 	char	buff[MAX_CMD_LEN + 1];
 	int8_t	level;
 
-	while (ft_printf(GREEN"🖥  ftp> "END) && (read_ret = read(STDIN_FILENO, &buff, MAX_CMD_LEN)) > 0)
+	while (ft_printf(CYAN"🖥  ftp> "END) && (read_ret = read(STDIN_FILENO, &buff, MAX_CMD_LEN)) > 0)
 	{
 		ft_printf(ORANGE"read_ret = %d, cmd = %s\n"END, read_ret, buff);
 		if (read_ret == -1)
