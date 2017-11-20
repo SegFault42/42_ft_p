@@ -6,31 +6,33 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/05 01:05:21 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/07 01:55:34 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/20 14:11:41 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "common.h"
 
+extern char	*g_ft_errno[];
+
 int	ft_error(int error)
 {
 	ft_printf(RED"");
 	if (error == FT_SOCKET_ERROR)
-		ft_dprintf(2, "socket() failure !\n");
+		ft_dprintf(2, "socket() failure !");
 	else if (error == FT_GET_PROTO_BY_NAME_ERROR)
-		ft_dprintf(2, "getprotobyname() failure !\n");
+		ft_dprintf(2, "getprotobyname() failure !");
 	else if (error == FT_BIND_ERROR)
-		ft_dprintf(2, "bind() failure !\n");
+		ft_dprintf(2, "bind() failure !");
 	else if (error == FT_LISTEN_ERROR)
-		ft_dprintf(2, "listen() failure !\n");
+		ft_dprintf(2, "listen() failure !");
 	else if (error == FT_OPEN_ERROR)
-		ft_dprintf(2, "open() failure !\n");
+		ft_dprintf(2, "open() failure !");
 	else if (error == FT_CONNECT_ERROR)
-		ft_dprintf(2, "connect() failure !\n");
+		ft_dprintf(2, "connect() failure !");
 	else if (error == FT_SEND_ERROR)
-		ft_dprintf(2, "send() failure !\n");
+		ft_dprintf(2, "send() failure !");
 	ft_printf(""END);
-	ft_dprintf(2, YELLOW"errno : %s\n"END, strerror(errno));
+	ft_dprintf(2, RED"\nerrno : %s\n"END, ERRNO);
 	exit(errno);
 }
 

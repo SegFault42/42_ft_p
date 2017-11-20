@@ -6,11 +6,13 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/18 08:10:41 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/20 08:58:04 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/20 16:19:23 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "common.h"
+
+extern char	*g_ft_errno[];
 
 static int8_t	easy_cmd(int socket, char *comp_cmd, char **split)
 {
@@ -20,7 +22,7 @@ static int8_t	easy_cmd(int socket, char *comp_cmd, char **split)
 
 	ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
 	if (ret_send == -1)
-		ft_printf(RED"Send %s failure\n"END);
+		ft_printf(RED"%s\n"END, ERRNO);
 	if (split == NULL || !ft_strcmp(split[0], "quit"))
 		return (QUIT);
 	ret_recv = recv(socket, buff, 4096, 0);
@@ -37,13 +39,13 @@ static int8_t	medium_cmd(int socket, char *comp_cmd)
 
 	ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
 	if (ret_send == -1)
-		ft_printf(RED"Send %s failure\n"END);
+		ft_printf(RED"%s\n"END, ERRNO);
 	else
 	{
 		while (1)
 		{
 			if ((ret_recv = recv(socket, buff, 4096, 0)) == -1)
-				ft_dprintf(2, RED"Recv Failure\n"END);
+				ft_printf(RED"Send %s failure\n"END);
 			buff[ret_recv] = 0;
 			if (ft_strstr(buff, KEY))
 			{
@@ -66,7 +68,7 @@ static void	get_cmd(int socket, char **split)
 
 	if ((fd = check_right_writing(socket, split[1])) == -1)
 	{
-		ft_printf(RED"Permission denied\n"END);
+		ft_printf(RED"%s\n"END, ERRNO);
 		return ;
 	}
 	recv(socket, buffer, sizeof(buffer), 0);
@@ -98,7 +100,7 @@ static int8_t		client_get(int socket, char *comp_cmd, char **split)
 	}
 	if ((ret_send = send(socket, comp_cmd, ft_strlen(comp_cmd), 0)) == -1)
 	{
-		ft_printf(RED"Send %s failure\n"END);
+		ft_printf(RED"%s\n"END, ERRNO);
 		return (-1);
 	}
 	recv(socket, buffer, sizeof(buffer), 0);
@@ -203,8 +205,11 @@ void	send_to_server(int socket)
 	char	buff[MAX_CMD_LEN + 1];
 	int8_t	level;
 
-	while (ft_printf(YELLOW"ftp> "END) && (read_ret = read(STDIN_FILENO, &buff, MAX_CMD_LEN)) > 0)
+	while (ft_printf(GREEN"🖥  ftp> "END) && (read_ret = read(STDIN_FILENO, &buff, MAX_CMD_LEN)) > 0)
 	{
+		ft_printf(ORANGE"read_ret = %d, cmd = %s\n"END, read_ret, buff);
+		if (read_ret == -1)
+			ft_printf(RED"%s"END, ERRNO);
 		buff[read_ret] = '\0';
 		if (buff[read_ret -1] == '\n')
 			buff[read_ret -1] = '\0';
@@ -212,6 +217,7 @@ void	send_to_server(int socket)
 			continue ;
 		if ((level = cmd_exist(split)) == EASY)
 		{
+			ft_printf(ORANGE"EASY\n"END);
 			if (easy_cmd(socket, buff, split) == QUIT)
 			{
 				ft_2d_tab_free(split);
@@ -219,12 +225,19 @@ void	send_to_server(int socket)
 			}
 		}
 		else if (level == MEDIUM)
+		{
+			ft_printf(ORANGE"MEDIUM\n"END);
 			medium_cmd(socket, buff);
+		}
 		else if (level == HARD)
+		{
+			ft_printf(ORANGE"HARD\n"END);
 			hard_cmd(socket, buff, split);
+		}
 		else
 			ft_dprintf(2, RED"Unknow command !\n"END);
 		ft_2d_tab_free(split);
+		ft_memset(buff, 0, sizeof(buff));
 	}
 	easy_cmd(socket, "quit", NULL);
 }

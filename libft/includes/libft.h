@@ -6,7 +6,7 @@
 /*   By: rabougue <rabougue@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/11/24 18:34:24 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/18 08:54:51 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/20 13:17:41 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@
 */
 
 # define MALLOC_ERROR (1)
-
+#define ERRNO g_ft_errno[errno]
 /*
 ** end comment
 */

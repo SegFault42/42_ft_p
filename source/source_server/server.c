@@ -6,14 +6,14 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:26:50 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/20 09:13:03 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/20 15:34:41 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "common.h"
 
 char	g_orig_dir[PATH_MAX];
-
+extern char	*g_ft_errno[];
 /*
  ** bind() liason du socket au client
  ** listen() ecoute les conexion entrante
@@ -51,7 +51,7 @@ void	dup_server(int client_socket, struct sockaddr_in sin, uint32_t client_socke
 		child_pid = fork();
 		if (child_pid == -1)
 		{
-			/*perror("can't fork");*/
+			ft_dprintf(2, "%s\n", ERRNO);
 			close(sock);
 			continue ;
 		}
@@ -247,6 +247,8 @@ static void		exec_rmdir(int socket, char **split, uint8_t flag)
 				ft_strcpy(buff, GREEN"File removed"END);
 		}
 	}
+	ft_printf("errno = %d, %s\n", errno, g_ft_errno[errno]);
+	perror("lol");
 	send(socket, buff, ft_strlen(buff), 0);
 }
 
@@ -409,7 +411,6 @@ void	recv_from_client(int socket)
 	int8_t	level_cmd;
 	char	**split;
 
-	ft_printf("path = %s\n", g_orig_dir);
 	while (true)
 	{
 		if ((ret_recv = recv(socket, complete_cmd, MAX_CMD_LEN, 0)) == -1)

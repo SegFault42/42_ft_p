@@ -1,5 +1,5 @@
-mkdir
-rmdir
-rm
+mkdir	ok
+rmdir	ok
+rm		ok
 progress bar
-log file
+log file (Server side)
