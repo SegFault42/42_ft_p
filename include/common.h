@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:16:13 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/18 14:54:39 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/20 09:01:53 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,10 @@
 # define EASY 1
 # define MEDIUM 2
 # define HARD 3
+
+#define RMDIR 0
+#define RM 1
+
 
 # define KEY "4UxEc64YRrtCxP5qadBgmB4hL5g99uEZceeiKzQmDHbT3D6UkZAQJJBBgkdgVff7"
 # define KEY_FAILURE "NumAubusYnr8xXTptmmhxd5qq5UZBTTo8MHgzkgqYEcEaiWBr4y8iPnf9XtvR276"

@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/18 08:10:41 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/19 18:22:52 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/20 08:58:04 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,7 +175,7 @@ static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
 static int8_t	cmd_exist(char **split)
 {
 	int8_t	incr;
-	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir","ls", "get", "put", NULL};
+	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir", "rm", "ls", "get", "put", NULL};
 	int8_t	level;
 
 	incr = 0;
@@ -184,9 +184,9 @@ static int8_t	cmd_exist(char **split)
 	{
 		if (!ft_strcmp(cmd[incr], split[0]))
 		{
-			if (incr <= 4)
+			if (incr <= 5)
 				level = EASY;
-			else if (incr == 5)
+			else if (incr == 6)
 				level = MEDIUM;
 			else
 				level = HARD;

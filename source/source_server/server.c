@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:26:50 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/19 18:38:35 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/20 09:13:03 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ static int8_t	get_level_cmd(char *str)
 {
 	int8_t	incr;
 	int8_t	level;
-	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir",  "ls", "get", "put", NULL};
+	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir", "rm", "ls", "get", "put", NULL};
 
 	incr = 0;
 	level = 0;
@@ -95,9 +95,9 @@ static int8_t	get_level_cmd(char *str)
 	{
 		if (!ft_strcmp(cmd[incr], str))
 		{
-			if (incr <= 4)
+			if (incr <= 5)
 				level = EASY;
-			else if (incr == 5)
+			else if (incr == 6)
 				level = MEDIUM;
 			else
 				level = HARD;
@@ -222,7 +222,7 @@ static void	exec_mkdir(int socket, char **split)
 	send(socket, buff, ft_strlen(buff), 0);
 }
 
-static void		exec_rmdir(int socket, char **split)
+static void		exec_rmdir(int socket, char **split, uint8_t flag)
 {
 	char	buff[BUFFER_SIZE];
 
@@ -232,12 +232,19 @@ static void		exec_rmdir(int socket, char **split)
 		ft_strcpy(buff, RED"Failure : Too few argument"END);
 	else
 	{
-		if (check_right(split[1], buff) == 1)
+		if (flag == RMDIR)
 		{
 			if (rmdir(split[1]) == -1)
 				ft_strcpy(buff, RED"Directory not exist"END);
 			else
 				ft_strcpy(buff, GREEN"Directory removed"END);
+		}
+		else
+		{
+			if (unlink(split[1]) == -1)
+				ft_strcpy(buff, RED"File not exist"END);
+			else
+				ft_strcpy(buff, GREEN"File removed"END);
 		}
 	}
 	send(socket, buff, ft_strlen(buff), 0);
@@ -252,7 +259,9 @@ static int8_t	exec_easy_cmd(int socket, char **split)
 	else if (!ft_strcmp(split[0], "mkdir"))
 		exec_mkdir(socket, split);
 	else if (!ft_strcmp(split[0], "rmdir"))
-		exec_rmdir(socket, split);
+		exec_rmdir(socket, split, RMDIR);
+	else if (!ft_strcmp(split[0], "rm"))
+		exec_rmdir(socket, split, RM);
 	else if (!ft_strcmp(split[0], "quit"))
 		return (QUIT);
 	return (0);
