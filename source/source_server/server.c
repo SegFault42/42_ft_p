@@ -337,7 +337,7 @@ static void	progress_bar(long int end, long int current)
 
 	x = L_C(current, 0, end, 0, 99);
 	ft_putstr(YELLOW"[");
-	ft_putnstr(GREEN"-", x);
+	ft_putnstr(GREEN"─", x);
 	ft_putnstr(" ", 99 - x);
 	ft_putstr(YELLOW"]"END);
 }
