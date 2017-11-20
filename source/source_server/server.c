@@ -329,17 +329,17 @@ static int8_t	check_right_client(int socket)
 		return (true);
 }
 
-# define L_C(X, x1, x2, y1, y2) ((int)(((X - x1) * (y2 - y1)) / (x2 - x1)) + y1)
+# define L_C(X, x1, x2, y1, y2) ((size_t)(((X - x1) * (y2 - y1)) / (x2 - x1)) + y1)
 
 static void	progress_bar(long int end, long int current)
 {
-	int x;
+	size_t	x;
 
 	x = L_C(current, 0, end, 0, 99);
-	ft_putstr(YELLOW"[");
-	ft_putnstr(GREEN"─", x);
-	ft_putnstr(" ", 99 - x);
-	ft_putstr(YELLOW"]"END);
+	ft_putstr(PURPLE"[");
+	ft_putnstr(PURPLE"─", x);
+	ft_putnstr(GREY"─", 99 - x);
+	ft_putstr(PURPLE"]"END);
 }
 
 
