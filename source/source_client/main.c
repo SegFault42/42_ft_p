@@ -6,11 +6,12 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:15:46 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/07 23:22:31 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/22 01:33:04 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "common.h"
+
 
 /*static void	prompt(int signal)*/
 /*{*/

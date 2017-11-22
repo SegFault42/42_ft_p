@@ -6,13 +6,13 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/18 08:10:41 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/20 18:45:15 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/22 04:46:57 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "common.h"
 
-extern char	*g_ft_errno[];
+extern char		*g_ft_errno[];
 
 static int8_t	easy_cmd(int socket, char *comp_cmd, char **split)
 {
@@ -133,16 +133,12 @@ static int8_t		client_put(int socket, char *comp_cmd, char **split)
 	int		fd;
 	char	buffer[BUFFER_SIZE];
 
-	ft_printf("put\n");
-
-	// 1st check if file exist and if i can open as read.
 	if ((fd = check_file_exist(split[1], buffer)) == -1)
 	{
 		ft_printf("%s\n", buffer);
 		return (-1);
 	}
 	send(socket, comp_cmd, ft_strlen(comp_cmd), 0);
-
 	recv(socket, buffer, BUFFER_SIZE, 0);
 	if (!ft_strcmp(buffer, "ERROR"))
 	{
@@ -151,7 +147,6 @@ static int8_t		client_put(int socket, char *comp_cmd, char **split)
 	}
 	exec_put(socket, fd);
 	close(fd);
-
 	return (0);
 }
 
@@ -198,15 +193,61 @@ static int8_t	cmd_exist(char **split)
 	return (level);
 }
 
+static  uint8_t	authentification()
+{
+	char			buff[21];
+	uint8_t			attempt;
+	struct termios	oldt;
+	struct termios	newt;
+
+	attempt = 1;
+	ft_printf("Username : ");
+	read(STDIN_FILENO, buff, sizeof(buff));
+	if (!strncmp("root", buff, 4))
+	{
+		while (attempt <= 3)
+		{
+			ft_printf("pass : ");
+			tcgetattr( STDIN_FILENO, &oldt);
+			newt = oldt;
+			newt.c_lflag &= ~(ECHO);
+			tcsetattr( STDIN_FILENO, TCSANOW, &newt);
+			read(STDIN_FILENO, buff, sizeof(buff));
+			tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
+			if (!ft_strncmp("toor", buff, 4))
+			{
+				ft_printf(GREEN"\nWelcome root !\n"END);
+				return (ROOT);
+			}
+			++attempt;
+			ft_printf("\n");
+			sleep(2);
+			ft_printf(RED"Wrong password\n"END);
+		}
+		ft_printf(RED"Login failure\n%slogged as anonymous\nWelcome anonymous\n"END, GREEN);
+	}
+	else if (!ft_strncmp(buff, "anonymous", 9))
+		ft_printf(GREEN"Welcome anonymous !\n"END);
+	else
+		ft_printf(GREEN"login incorrect, logged as anonymous\n"END);
+	return (ANONYMOUS);
+}
+
 void	send_to_server(int socket)
 {
 	ssize_t	read_ret;
 	char	**split;
 	char	buff[MAX_CMD_LEN + 1];
 	int8_t	level;
+	uint8_t	auth;
 
-	while (ft_printf(CYAN"🖥  ftp> "END) && (read_ret = read(STDIN_FILENO, &buff, MAX_CMD_LEN)) > 0)
+	auth = authentification();
+	auth == ROOT ? send(socket, "root", 4, 0) : send(socket, "anonymous", 9, 0);
+	while (1)
 	{
+		auth == ROOT ? ft_printf(RED"🖥  root:ftp> "END) : ft_printf(GREEN"💻  ftp> "END);
+		if ((read_ret = read(STDIN_FILENO, buff, MAX_CMD_LEN)) == 0)
+			break ;
 		ft_printf(ORANGE"read_ret = %d, cmd = %s\n"END, read_ret, buff);
 		if (read_ret == -1)
 			ft_printf(RED"%s"END, ERRNO);

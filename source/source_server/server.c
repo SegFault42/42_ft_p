@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/06 00:26:50 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/20 19:02:40 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/22 04:10:50 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 char	g_orig_dir[PATH_MAX];
 extern char	*g_ft_errno[];
+uint8_t		g_auth = ANONYMOUS;
 /*
  ** bind() liason du socket au client
  ** listen() ecoute les conexion entrante
@@ -112,25 +113,11 @@ static int8_t	check_right(char *path, char *buff)
 	char	cur_dir[PATH_MAX];
 	char	new_dir[PATH_MAX];
 
-	if (path == NULL)
+	if ((path == NULL || g_auth == ROOT) ||
+		(getcwd(cur_dir, PATH_MAX) == NULL && ft_strcpy(buff, RED"Get current dir failure."END)) ||
+		(chdir(path) == -1 && ft_strcpy(buff, RED"Failure : Invalid directory"END)) ||
+		(getcwd(new_dir, PATH_MAX) == NULL && ft_strcpy(buff, RED"Get new dir failure."END)))
 		return (1);
-	if (getcwd(cur_dir, PATH_MAX) == NULL)
-	{
-		ft_strcpy(buff, RED"Get current dir failure."END);
-		return (-1);
-	}
-	if (chdir(path) == -1)
-	{
-		ft_strcpy(buff, RED"Failure : Invalid directory"END);
-		return (-1);
-	}
-	if (getcwd(new_dir, PATH_MAX) == NULL)
-	{
-		ft_strcpy(buff, RED"Get new dir failure."END);
-		return (-1);
-	}
-	ft_printf("cur_dir = %s\n", cur_dir);
-	ft_printf("new_dir = %s\n", new_dir);
 	if (ft_strncmp(g_orig_dir, new_dir, ft_strlen(g_orig_dir)))
 	{
 		ft_strcpy(buff, RED"Failure : Insufficient permissions"END);
@@ -199,20 +186,14 @@ static void	exec_mkdir(int socket, char **split)
 		ft_strcpy(buff, RED"Failure : Too few argument"END);
 	else
 	{
-		directory = get_directory(split);
-		if (directory == NULL)
-			ret = 1;
-		else
-			ret = check_right(directory, buff);
+		(directory = get_directory(split)) == NULL ? ret = 1 : (ret = check_right(directory, buff));
 		ft_strdel(&directory);
-		ft_printf("ret = %d\n", ret);
 		if (ret == 1)
 		{
 			if (mkdir(split[1], 0744) == -1)
 			{
-				if (errno == EEXIST)
-					ft_strcpy(buff, RED"Failure : Directory exist"END);
-				else
+				errno == EEXIST ?
+					ft_strcpy(buff, RED"Failure : Directory exist"END) :
 					ft_strcpy(buff, RED"Failure : Creating directory"END);
 			}
 			else
@@ -247,8 +228,6 @@ static void		exec_rmdir(int socket, char **split, uint8_t flag)
 				ft_strcpy(buff, GREEN"File removed"END);
 		}
 	}
-	ft_printf("errno = %d, %s\n", errno, g_ft_errno[errno]);
-	perror("lol");
 	send(socket, buff, ft_strlen(buff), 0);
 }
 
@@ -279,15 +258,10 @@ static void	exec_ls(int socket, char **split)
 
 	child_pid = fork();
 	if (child_pid ==1)
-	{
-		perror("Can't fork");
 		exit(errno);
-	}
 	else if (child_pid == 0)
 	{
-		if (dup2(socket, STDOUT_FILENO) == -1)
-			ft_error(FT_DUP2_ERROR);
-		if (dup2(socket, STDERR_FILENO) == -1)
+		if (dup2(socket, STDOUT_FILENO) == -1 || dup2(socket, STDERR_FILENO) == -1)
 			ft_error(FT_DUP2_ERROR);
 		close(socket);
 		execv("/bin/ls", split);
@@ -336,12 +310,12 @@ static void	progress_bar(long int end, long int current)
 	size_t	x;
 
 	x = L_C(current, 0, end, 0, 99);
-	ft_putstr(PURPLE"[");
+	ft_putstr(PURPLE"[ ");
 	ft_putnstr(PURPLE"─", x);
+	ft_putnstr(PURPLE"🐌", 1);
 	ft_putnstr(GREY"─", 99 - x);
-	ft_putstr(PURPLE"]"END);
+	ft_putstr(PURPLE" ]"END);
 }
-
 
 static void	exec_get(int socket, int fd)
 {
@@ -357,7 +331,7 @@ static void	exec_get(int socket, int fd)
 		return ;
 	fstat(fd, &st);
 	send_file_size(socket, st.st_size);
-	ft_printf("\033[?25l"); // Hide Cursor
+	ft_printf("\033[?25l");
 	while ((ret_read = read(fd, buffer, sizeof(buffer))) > 0)
 	{
 		ret_send = send(socket, buffer, (size_t)ret_read, 0);
@@ -365,7 +339,7 @@ static void	exec_get(int socket, int fd)
 		progress_bar(st.st_size, (long) size_sent);
 		ft_printf("\r");
 	}
-	ft_printf("\033[?25h"); // Show Cursor
+	ft_printf("\033[?25h");
 	ft_printf(GREEN"\nTransfert success\n"END);
 }
 
@@ -410,7 +384,6 @@ static void	server_put(int socket, char **split)
 		return ;
 	recv(socket, buffer, BUFFER_SIZE, 0);
 	size = ft_atol(buffer);
-	ft_printf("%d\n", size);
 	while (size > 0)
 	{
 		ret_recv = recv(socket, buffer, sizeof(buffer), 0);
@@ -435,6 +408,9 @@ void	recv_from_client(int socket)
 	int8_t	level_cmd;
 	char	**split;
 
+	recv(socket, complete_cmd, sizeof(complete_cmd), 0);
+	if (!ft_strcmp(complete_cmd, "root"))
+		g_auth = ROOT;
 	while (true)
 	{
 		if ((ret_recv = recv(socket, complete_cmd, MAX_CMD_LEN, 0)) == -1)

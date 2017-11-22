@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:16:13 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/20 17:37:48 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/21 23:31:07 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 # include <errno.h>
 # include "./client.h"
 # include "./server.h"
+# include <termios.h>
 # include "./curses.h"
 
 # ifdef __linux__
@@ -48,7 +49,7 @@
 # define ABORT	-2
 
 # define BUFF_LEN		4096
-# define BUFFER_SIZE	4096
+# define BUFFER_SIZE	4096 * 4
 # define MAX_CMD_LEN	4096
 
 # define COMMAND split[0]
@@ -59,6 +60,10 @@
 
 #define RMDIR 0
 #define RM 1
+
+# define ROOT 1
+# define ANONYMOUS 0
+
 
 
 # define KEY "4UxEc64YRrtCxP5qadBgmB4hL5g99uEZceeiKzQmDHbT3D6UkZAQJJBBgkdgVff7"
