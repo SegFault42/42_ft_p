@@ -339,6 +339,7 @@ void	send_to_server(int socket)
 	uint8_t	auth;
 
 	auth = authentification();
+	ft_printf("%d\n", auth);
 	auth == ROOT ? send(socket, "root", 4, 0) : send(socket, "anonymous", 9, 0);
 	while (1)
 	{

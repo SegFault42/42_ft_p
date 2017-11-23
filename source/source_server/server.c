@@ -49,7 +49,8 @@ void	dup_server(int client_socket, struct sockaddr_in sin, uint32_t client_socke
 
 	while (true)
 	{
-		sock = accept(client_socket, (struct sockaddr *)&sin, &client_socket_len);
+		sock = accept(client_socket, (struct sockaddr *)&sin,
+		&client_socket_len);
 		child_pid = fork();
 		if (child_pid == -1)
 		{
@@ -89,7 +90,8 @@ static int8_t	get_level_cmd(char *str)
 {
 	int8_t	incr;
 	int8_t	level;
-	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir", "rm", "ls", "get", "put", NULL};
+	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir",
+	"rm", "ls", "get", "put", NULL};
 
 	incr = 0;
 	level = 0;
@@ -181,13 +183,12 @@ static void	exec_mkdir(int socket, char **split)
 	int8_t	ret;
 	char	*directory;
 
-	if (ft_count_2d_tab(split) > 2)
-		ft_strcpy(buff, RED"Failure : Too many argument"END);
-	else if (ft_count_2d_tab(split) == 1)
-		ft_strcpy(buff, RED"Failure : Too few argument"END);
+	if (ft_count_2d_tab(split) != 2)
+		ft_strcpy(buff, RED"Failure : Too many/few argument"END);
 	else
 	{
-		(directory = get_directory(split)) == NULL ? ret = 1 : (ret = check_right(directory, buff));
+		(directory = get_directory(split)) == NULL ? ret = 1 :
+		(ret = check_right(directory, buff));
 		ft_strdel(&directory);
 		if (ret == 1)
 		{
@@ -327,7 +328,6 @@ static void	exec_get(int socket, int fd)
 	send_file_size(socket, st.st_size);
 	while ((ret_read = read(fd, buffer, sizeof(buffer))) > 0)
 		ret_send = send(socket, buffer, (size_t)ret_read, 0);
-	ft_printf(GREEN"\nTransfert success\n"END);
 }
 
 static void	server_get(int socket, char **split)
@@ -377,7 +377,6 @@ static void	server_put(int socket, char **split)
 		write(fd, &buffer, (size_t)ret_recv);
 		size -= ret_recv;
 	}
-	ft_printf(GREEN"Transfert success\n"END);
 }
 
 static void	exec_hard_cmd(int socket, char **split)
@@ -386,18 +385,27 @@ static void	exec_hard_cmd(int socket, char **split)
 		server_get(socket, split);
 	else if (!ft_strcmp(split[0], "put"))
 		server_put(socket, split);
+	ft_printf(GREEN"Transfert success\n"END);
+}
+
+void	auth_server(int socket)
+{
+	char	complete_cmd[4096];
+
+	ft_memset(complete_cmd, 0, sizeof(complete_cmd));
+	recv(socket, complete_cmd, sizeof(complete_cmd), 0);
+	if (!ft_strcmp(complete_cmd, "root"))
+		g_auth = ROOT;
 }
 
 void	recv_from_client(int socket)
 {
-	char	complete_cmd[MAX_CMD_LEN + 1];
+	char	complete_cmd[MAX_CMD_LEN + 1] = {0};
 	ssize_t	ret_recv;
 	int8_t	level_cmd;
 	char	**split;
 
-	recv(socket, complete_cmd, sizeof(complete_cmd), 0);
-	if (!ft_strcmp(complete_cmd, "root"))
-		g_auth = ROOT;
+	auth_server(socket);
 	while (true)
 	{
 		if ((ret_recv = recv(socket, complete_cmd, MAX_CMD_LEN, 0)) == -1)
@@ -407,16 +415,11 @@ void	recv_from_client(int socket)
 		level_cmd = get_level_cmd(split[0]);
 		ft_printf(CYAN"%s receveid\n"END, complete_cmd);
 		if (level_cmd == EASY)
-		{
-			if (exec_easy_cmd(socket, split) == QUIT)
-			{
-				ft_2d_tab_free(split);
+			if (exec_easy_cmd(socket, split) == QUIT && !ft_2d_tab_free(split))
 				break ;
-			}
-		}
-		else if (level_cmd == MEDIUM)
+		if (level_cmd == MEDIUM)
 			exec_medium_cmd(socket, split);
-		else if (level_cmd == HARD)
+		if (level_cmd == HARD)
 			exec_hard_cmd(socket, split);
 		ft_2d_tab_free(split);
 	}

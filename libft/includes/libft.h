@@ -109,7 +109,7 @@ char				*ft_crypt(char *str);
 char				*ft_decrypt(char *str);
 void				ft_debug(void);
 int					get_next_line(int const fd, char **line);
-void				ft_2d_tab_free(char **tab);
+int					ft_2d_tab_free(char **tab);
 int					ft_tab_len(char **tab);
 double				ft_sqrt(double a);
 long				ft_atol(const char *str);
