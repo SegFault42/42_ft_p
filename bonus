@@ -1,5 +1,5 @@
 mkdir	ok
 rmdir	ok
 rm		ok
-progress bar
-log file (Server side)
+progress bar	ok
+lcd, lls, lpwd ok

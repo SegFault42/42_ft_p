@@ -6,13 +6,14 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/18 08:10:41 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/22 04:46:57 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/23 05:06:05 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "common.h"
 
 extern char		*g_ft_errno[];
+char	g_orig_dir[PATH_MAX];
 
 static int8_t	easy_cmd(int socket, char *comp_cmd, char **split)
 {
@@ -59,13 +60,28 @@ static int8_t	medium_cmd(int socket, char *comp_cmd)
 	return (0);
 }
 
+static void	progress_bar(long int end, long int current)
+{
+	size_t	x;
+
+	x = L_C(current, 0, end, 0, 99);
+	ft_putstr(PURPLE"[ ");
+	ft_putnstr(PURPLE"─", x);
+	ft_putnstr(PURPLE"🐌", 1);
+	ft_putnstr(GREY"─", 99 - x);
+	ft_putstr(PURPLE" ]"END);
+}
+
 static void	get_cmd(int socket, char **split)
 {
 	char	buffer[BUFFER_SIZE];
 	int		fd;
 	ssize_t	ret_recv;
 	long	size;
+	long	size_save;
+	long double	size_recv;
 
+	size_recv = 0;
 	if ((fd = check_right_writing(socket, split[1])) == -1)
 	{
 		ft_printf(RED"%s\n"END, ERRNO);
@@ -73,13 +89,19 @@ static void	get_cmd(int socket, char **split)
 	}
 	recv(socket, buffer, sizeof(buffer), 0);
 	size = ft_atol(buffer);
+	size_save = size;
+	ft_printf("\033[?25l");
 	while (size > 0)
 	{
 		ret_recv = recv(socket, buffer, sizeof(buffer), 0);
 		write(fd, &buffer, (size_t)ret_recv);
 		ft_memset(buffer, 0, sizeof(buffer));
 		size -= ret_recv;
+		size_recv += ret_recv;
+		progress_bar(size_save, (long)size_recv);
+		ft_printf("\r");
 	}
+	ft_printf("\033[?25h");
 	RC;
 	ft_printf(GREEN"Transfert success\n"END);
 }
@@ -169,10 +191,68 @@ static int8_t	hard_cmd(int socket, char *comp_cmd, char **split)
 	return (0);
 }
 
+static void	exec_lls(char **split, uint8_t flag)
+{
+	int		child_pid;
+	char	buff[BUFF_SIZE + 1];
+
+	child_pid = fork();
+	if (child_pid ==1)
+		exit(errno);
+	else if (child_pid == 0)
+	{
+		if (flag == 1)
+			execv("/bin/ls", split);
+		else if (flag == 2)
+			execv("/bin/pwd", split);
+		exit(0);
+	}
+	else
+		wait4(child_pid, 0, 0, 0);
+}
+
+static void	exec_lcd(char **split)
+{
+	int8_t	ret;
+
+	if (ft_count_2d_tab(split) > 2)
+		ft_printf(RED"Failure : Too many argument\n"END);
+	else if (ft_count_2d_tab(split) == 1)
+	{
+		if (chdir(g_orig_dir) == -1)
+			ft_printf(RED"Failure : Changing directory\n"END);
+		else
+			ft_printf(GREEN"Directory changed\n"END);
+	}
+	else
+	{
+		if (chdir(split[1]) == -1)
+			ft_printf(RED"Failure : Changing directory\n"END);
+		else
+			ft_printf(GREEN"Directory changed\n"END);
+	}
+}
+
+static int8_t	local_cmd(char **split)
+{
+	if (!ft_strcmp(split[0], "lls"))
+		exec_lls(split, 1);
+	else if (!ft_strcmp(split[0], "lpwd"))
+	{
+		if (ft_count_2d_tab(split) == 1)
+			exec_lls(split, 2);
+		else
+			ft_dprintf(2, RED"Too many arguments\n"END);
+	}
+	else if (!ft_strcmp(split[0], "lcd"))
+		exec_lcd(split);
+	return (0);
+}
+
 static int8_t	cmd_exist(char **split)
 {
 	int8_t	incr;
-	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir", "rm", "ls", "get", "put", NULL};
+	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir", "rm", "ls", "get", "put", "lls", "lpwd", "lcd", NULL};
 	int8_t	level;
 
 	incr = 0;
@@ -185,8 +265,10 @@ static int8_t	cmd_exist(char **split)
 				level = EASY;
 			else if (incr == 6)
 				level = MEDIUM;
-			else
+			else if (incr <= 8)
 				level = HARD;
+			else
+				level = LOCAL;
 		}
 		++incr;
 	}
@@ -195,18 +277,20 @@ static int8_t	cmd_exist(char **split)
 
 static  uint8_t	authentification()
 {
-	char			buff[21];
+	char			buff[4096];
 	uint8_t			attempt;
 	struct termios	oldt;
 	struct termios	newt;
 
+	ft_memset(buff, 0, sizeof(buff));
 	attempt = 1;
 	ft_printf("Username : ");
 	read(STDIN_FILENO, buff, sizeof(buff));
-	if (!strncmp("root", buff, 4))
+	if (!ft_strcmp("root\n", buff))
 	{
 		while (attempt <= 3)
 		{
+			ft_memset(buff, 0, sizeof(buff));
 			ft_printf("pass : ");
 			tcgetattr( STDIN_FILENO, &oldt);
 			newt = oldt;
@@ -214,7 +298,7 @@ static  uint8_t	authentification()
 			tcsetattr( STDIN_FILENO, TCSANOW, &newt);
 			read(STDIN_FILENO, buff, sizeof(buff));
 			tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
-			if (!ft_strncmp("toor", buff, 4))
+			if (!ft_strcmp("toor\n", buff))
 			{
 				ft_printf(GREEN"\nWelcome root !\n"END);
 				return (ROOT);
@@ -275,6 +359,8 @@ void	send_to_server(int socket)
 			ft_printf(ORANGE"HARD\n"END);
 			hard_cmd(socket, buff, split);
 		}
+		else if (level == LOCAL)
+			local_cmd(split);
 		else
 			ft_dprintf(2, RED"Unknow command !\n"END);
 		ft_2d_tab_free(split);

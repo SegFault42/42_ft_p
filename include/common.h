@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:16:13 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/21 23:31:07 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/23 02:25:02 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,15 +54,18 @@
 
 # define COMMAND split[0]
 
-# define EASY 1
-# define MEDIUM 2
-# define HARD 3
+# define EASY	1
+# define MEDIUM	2
+# define HARD	3
+# define LOCAL	4
 
-#define RMDIR 0
-#define RM 1
+#define RMDIR	0
+#define RM		1
 
-# define ROOT 1
-# define ANONYMOUS 0
+# define ROOT		1
+# define ANONYMOUS	0
+
+# define L_C(X, x1, x2, y1, y2) ((size_t)(((X - x1) * (y2 - y1)) / (x2 - x1)) + y1)
 
 
 
