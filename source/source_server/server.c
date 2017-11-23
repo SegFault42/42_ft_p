@@ -12,13 +12,14 @@
 
 #include "common.h"
 
-char	g_orig_dir[PATH_MAX];
 extern char	*g_ft_errno[];
+char		g_orig_dir[PATH_MAX];
 uint8_t		g_auth = ANONYMOUS;
+
 /*
- ** bind() liason du socket au client
- ** listen() ecoute les conexion entrante
- */
+** bind() liason du socket au client
+** listen() ecoute les conexion entrante
+*/
 
 int	create_server(uint16_t port)
 {
@@ -287,6 +288,15 @@ static void	exec_ls(int socket, char **split)
 
 static void	exec_medium_cmd(int socket, char **split)
 {
+	char	buff[4096];
+
+	if (check_right(split[ft_count_2d_tab(split) -1], buff) != 1)
+	{
+		ft_strcat(buff, "\n");
+		send(socket, buff, sizeof(buff), 0);
+		send(socket, KEY, 64, 0);
+		return ;
+	}
 	if (!ft_strcmp(split[0], "ls"))
 		exec_ls(socket, split);
 	send(socket, KEY, 64, 0);

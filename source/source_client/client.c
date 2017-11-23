@@ -12,8 +12,8 @@
 
 #include "common.h"
 
-extern char		*g_ft_errno[];
-char	g_orig_dir[PATH_MAX];
+extern char	*g_ft_errno[];
+char		g_orig_dir[PATH_MAX];
 
 static int8_t	easy_cmd(int socket, char *comp_cmd, char **split)
 {
@@ -74,36 +74,31 @@ static void	progress_bar(long int end, long int current)
 
 static void	get_cmd(int socket, char **split)
 {
-	char	buffer[BUFFER_SIZE];
-	int		fd;
-	ssize_t	ret_recv;
-	long	size;
-	long	size_save;
+	char		buffer[BUFFER_SIZE];
+	int			fd;
+	ssize_t		ret_recv;
+	long		size[2];
 	long double	size_recv;
 
 	size_recv = 0;
-	if ((fd = check_right_writing(socket, split[1])) == -1)
-	{
-		ft_printf(RED"%s\n"END, ERRNO);
+	if ((fd = check_right_writing(socket, split[1])) == -1 &&
+	ft_printf(RED"%s\n"END, ERRNO))
 		return ;
-	}
 	recv(socket, buffer, sizeof(buffer), 0);
-	size = ft_atol(buffer);
-	size_save = size;
+	size[0] = ft_atol(buffer);
+	size[1] = size[0];
 	ft_printf("\033[?25l");
-	while (size > 0)
+	while (size[0] > 0)
 	{
 		ret_recv = recv(socket, buffer, sizeof(buffer), 0);
 		write(fd, &buffer, (size_t)ret_recv);
 		ft_memset(buffer, 0, sizeof(buffer));
-		size -= ret_recv;
+		size[0] -= ret_recv;
 		size_recv += ret_recv;
-		progress_bar(size_save, (long)size_recv);
+		progress_bar(size[1], (long)size_recv);
 		ft_printf("\r");
 	}
-	ft_printf("\033[?25h");
-	RC;
-	ft_printf(GREEN"Transfert success\n"END);
+	ft_printf("\n\033[?25h%sTransfert success\n%s", GREEN, END);
 }
 
 static int8_t		client_get(int socket, char *comp_cmd, char **split)
@@ -127,9 +122,7 @@ static int8_t		client_get(int socket, char *comp_cmd, char **split)
 	}
 	recv(socket, buffer, sizeof(buffer), 0);
 	if (!ft_strcmp(buffer, "SUCCESS"))
-	{ //  HEre verfi for file ok
 		get_cmd(socket, split);
-	}
 	else
 		ft_printf("%s\n", buffer);
 	return (0);
@@ -141,13 +134,22 @@ static void			exec_put(int socket, int fd)
 	struct stat	st;
 	long		size;
 	ssize_t		ret_read;
+	long		total_read;
 
 	fstat(fd, &st);
+	total_read = 0;
 	size = st.st_size;
 	send_file_size(socket, size);
+	ft_printf("\033[?25l");
 	while ((ret_read = read(fd, buffer, sizeof(buffer))) > 0)
+	{
 		send(socket, buffer, (size_t)ret_read, 0);
-	ft_printf(GREEN"Transfert success\n"END);
+		total_read += ret_read;
+		progress_bar(size, (long)total_read);
+		ft_printf("\r");
+	}
+	ft_printf("\033[?25h");
+	ft_printf(GREEN"\nTransfert success\n"END);
 }
 
 static int8_t		client_put(int socket, char *comp_cmd, char **split)
@@ -252,7 +254,8 @@ static int8_t	local_cmd(char **split)
 static int8_t	cmd_exist(char **split)
 {
 	int8_t	incr;
-	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir", "rm", "ls", "get", "put", "lls", "lpwd", "lcd", NULL};
+	const char	*cmd[] = {"cd", "pwd", "quit", "mkdir", "rmdir", "rm", "ls",
+	"get", "put", "lls", "lpwd", "lcd", NULL};
 	int8_t	level;
 
 	incr = 0;
@@ -275,40 +278,50 @@ static int8_t	cmd_exist(char **split)
 	return (level);
 }
 
+# define OLD term[0]
+# define NEW term[1]
+
+static  uint8_t	authentification_pass()
+{
+	char	buff[4096];
+	uint8_t	attempt;
+	struct termios	term[2];
+
+	attempt = 1;
+	while (attempt <= 3)
+	{
+		ft_memset(buff, 0, sizeof(buff));
+		ft_printf("pass : ");
+		tcgetattr(STDIN_FILENO, &OLD);
+		NEW = OLD;
+		NEW.c_lflag &= ~(ECHO);
+		tcsetattr( STDIN_FILENO, TCSANOW, &NEW);
+		read(STDIN_FILENO, buff, sizeof(buff));
+		tcsetattr( STDIN_FILENO, TCSANOW, &OLD);
+		if (!ft_strcmp("toor\n", buff) &&
+		ft_printf(GREEN"\nWelcome root !\n"END))
+			return (ROOT);
+		++attempt;
+		ft_printf("\n");
+		sleep(2);
+		ft_printf(RED"Wrong password\n"END);
+	}
+	return (ANONYMOUS);
+}
+
 static  uint8_t	authentification()
 {
 	char			buff[4096];
-	uint8_t			attempt;
-	struct termios	oldt;
-	struct termios	newt;
 
 	ft_memset(buff, 0, sizeof(buff));
-	attempt = 1;
 	ft_printf("Username : ");
 	read(STDIN_FILENO, buff, sizeof(buff));
 	if (!ft_strcmp("root\n", buff))
 	{
-		while (attempt <= 3)
-		{
-			ft_memset(buff, 0, sizeof(buff));
-			ft_printf("pass : ");
-			tcgetattr( STDIN_FILENO, &oldt);
-			newt = oldt;
-			newt.c_lflag &= ~(ECHO);
-			tcsetattr( STDIN_FILENO, TCSANOW, &newt);
-			read(STDIN_FILENO, buff, sizeof(buff));
-			tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
-			if (!ft_strcmp("toor\n", buff))
-			{
-				ft_printf(GREEN"\nWelcome root !\n"END);
-				return (ROOT);
-			}
-			++attempt;
-			ft_printf("\n");
-			sleep(2);
-			ft_printf(RED"Wrong password\n"END);
-		}
-		ft_printf(RED"Login failure\n%slogged as anonymous\nWelcome anonymous\n"END, GREEN);
+		if (authentification_pass() == ROOT)
+			return (ROOT);
+		ft_printf(RED"Login failure\n%slogged as anonymous\n\
+		Welcome anonymous\n"END, GREEN);
 	}
 	else if (!ft_strncmp(buff, "anonymous", 9))
 		ft_printf(GREEN"Welcome anonymous !\n"END);
