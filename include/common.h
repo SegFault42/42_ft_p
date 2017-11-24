@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/16 14:16:13 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/23 02:25:02 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/24 05:10:19 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,6 @@
 # include "./server.h"
 # include <termios.h>
 # include "./curses.h"
-
-# ifdef __linux__
-	# define PATH_MAX		4096
-# endif
 
 # define FT_SOCKET_ERROR			-1
 # define FT_GET_PROTO_BY_NAME_ERROR	-2
@@ -59,18 +55,17 @@
 # define HARD	3
 # define LOCAL	4
 
-#define RMDIR	0
-#define RM		1
+# define RMDIR	0
+# define RM		1
 
 # define ROOT		1
 # define ANONYMOUS	0
 
-# define L_C(X, x1, x2, y1, y2) ((size_t)(((X - x1) * (y2 - y1)) / (x2 - x1)) + y1)
+typedef size_t	t_s;
 
-
+# define L_C(X, x1, x2, y1, y2) ((t_s)(((X - x1) * (y2 - y1)) / (x2 - x1)) + y1)
 
 # define KEY "4UxEc64YRrtCxP5qadBgmB4hL5g99uEZceeiKzQmDHbT3D6UkZAQJJBBgkdgVff7"
-# define KEY_FAILURE "NumAubusYnr8xXTptmmhxd5qq5UZBTTo8MHgzkgqYEcEaiWBr4y8iPnf9XtvR276"
 
 int			usage(char *argv, bool type);
 int			ft_error(int error);

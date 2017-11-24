@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/06 09:05:53 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/04 01:20:42 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/24 04:58:09 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,5 +46,8 @@ void			percent_x(t_printf *print, va_list pa, int upper_lower);
 */
 void			print_buff(t_printf *print, int fd);
 void			error(int error);
+
+void			count_buff_size(t_printf *print, const char *forma, va_list pa);
+void			write_string(t_printf *print, const char *format, va_list pa);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/05 01:05:21 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/20 14:11:41 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/24 05:16:20 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ int	usage(char *argv, bool type)
 	if (type == SERVER)
 		ft_dprintf(2, "Usage : %s [port] (between 1024 and 65535)\n", argv);
 	else if (type == CLIENT)
-		ft_dprintf(2, "Usage : %s [addr] [port] (between 1024 and 65535)\n", argv);
+		ft_dprintf(2, "Usage : %s [addr] [port] (between 1024 and 65535)\n",
+				argv);
 	exit(EXIT_FAILURE);
 }

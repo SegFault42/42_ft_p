@@ -1,9 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   common.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2017/11/24 05:16:28 by rabougue          #+#    #+#             */
+/*   Updated: 2017/11/24 05:17:19 by rabougue         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "common.h"
 
 char	*extract_name_from_path(char *path)
 {
 	char	*file;
-	
+
 	if ((file = ft_strchr(path, '/')) == NULL)
 		file = path;
 	else
@@ -14,9 +26,9 @@ char	*extract_name_from_path(char *path)
 	return (file);
 }
 
-int	check_file_exist(char *file, char *buff)
+int		check_file_exist(char *file, char *buff)
 {
-	int		fd;
+	int			fd;
 	struct stat	st;
 
 	if ((fd = open(file, O_RDONLY)) == -1)
@@ -40,7 +52,7 @@ int	check_file_exist(char *file, char *buff)
 	return (fd);
 }
 
-int	check_right_writing(int socket, char *split)
+int		check_right_writing(int socket, char *split)
 {
 	int		fd;
 	char	buffer[BUFFER_SIZE];
@@ -63,4 +75,3 @@ void	send_file_size(int socket, off_t st_size)
 	ret_send = send(socket, itoa, ft_strlen(itoa), 0);
 	ft_strdel(&itoa);
 }
-

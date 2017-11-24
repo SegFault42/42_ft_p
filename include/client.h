@@ -6,28 +6,32 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/05 01:07:44 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/08 01:17:05 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/24 05:00:25 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FT_CLIENT_H
 # define FT_CLIENT_H
-/*
-** setup.c
-*/
+
 int		create_client(char *addr, uint16_t port);
-/*
-** command.c
-*/
 void	command(int sock);
-/*
-** client_to_server.c
-*/
 void	send_to_server(int sock);
-/*
-** exec_cmd.c
-*/
 int8_t	exec_quit(char **split);
-//int	exec_get(char *comp_cmd, int sock);
+
+int8_t	easy_cmd(int socket, char *comp_cmd, char **split);
+int8_t	medium_cmd(int socket, char *comp_cmd);
+int8_t	hard_cmd(int socket, char *comp_cmd, char **split);
+
+int8_t	client_put(int socket, char *comp_cmd, char **split);
+void	exec_put(int socket, int fd);
+int8_t	client_get(int socket, char *comp_cmd, char **split);
+void	get_cmd(int socket, char **split);
+
+int8_t	cmd_exist(char **split);
+int8_t	local_cmd(char **split);
+void	exec_lcd(char **split);
+void	exec_lls(char **split, uint8_t flag);
+
+void	progress_bar(long int end, long int current);
 
 #endif

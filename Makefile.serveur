@@ -6,7 +6,7 @@
 #    By: rabougue <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/12/10 19:16:51 by rabougue          #+#    #+#              #
-#    Updated: 2017/11/06 00:28:01 by rabougue         ###   ########.fr        #
+#    Updated: 2017/11/24 06:28:35 by rabougue         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,6 +17,10 @@ FLAG	= -Weverything
 LFT		= ./libft/libft.a
 SRCS	=	./source/source_server/main.c\
 			./source/source_server/server.c\
+			./source/source_server/cmd.c\
+			./source/source_server/exec.c\
+			./source/source_server/get_put.c\
+			./source/source_server/tools.c\
 			./source/error.c\
 			./source/common.c\
 			./source/port.c

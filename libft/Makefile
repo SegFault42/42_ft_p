@@ -6,7 +6,7 @@
 #    By: rabougue <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/12/10 19:16:51 by rabougue          #+#    #+#              #
-#    Updated: 2017/11/20 10:02:01 by rabougue         ###   ########.fr        #
+#    Updated: 2017/11/24 05:04:57 by rabougue         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,7 +38,7 @@ SRC = ft_memset.c ft_bzero.c ft_memcpy.c ft_memccpy.c ft_memmove.c ft_memchr.c \
 	  ft_count_2d_tab.c ft_itoa_base.c ft_strclen.c ft_hexa_itoa.c \
 	  ft_put_long.c ft_ltoa.c ft_put_ulong.c ft_ltoa_base.c ft_ultoa.c \
 	  ft_hexa_ltoa.c ft_ultoa_base.c ft_size_ttoa.c ft_strndup.c\
-	  $(PRE)ft_dprintf.c $(PRE)percent_c.c \
+	  $(PRE)ft_dprintf.c $(PRE)ft_printf.c $(PRE)percent_c.c \
 	  $(PRE)percent_d.c $(PRE)percent_s.c $(PRE)percent_p.c\
 	  $(PRE)tools.c $(PRE)percent_x.c $(PRE)percent_o.c\
 	  ft_print_2d_tab.c ft_check_int_overflow.c ft_count_char.c ft_strccmp.c \

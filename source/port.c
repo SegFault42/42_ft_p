@@ -6,7 +6,7 @@
 /*   By: rabougue <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/05 21:44:03 by rabougue          #+#    #+#             */
-/*   Updated: 2017/11/07 23:58:46 by rabougue         ###   ########.fr       */
+/*   Updated: 2017/11/24 05:15:54 by rabougue         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,4 +30,3 @@ uint16_t	is_port_valid(char **argv, bool type)
 	}
 	return ((uint16_t)port);
 }
-
