@@ -13,7 +13,7 @@
 ##################################_COMPILATION_#################################
 NAME	= client
 CC		= clang
-FLAG	= -Weverything
+FLAG	= -Wall -Wextra -Werror
 LFT		= ./libft/libft.a
 SRCS	=	./source/source_client/main.c\
 			./source/source_client/setup.c\
