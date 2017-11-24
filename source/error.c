@@ -31,8 +31,9 @@ int	ft_error(int error)
 		ft_dprintf(2, "connect() failure !");
 	else if (error == FT_SEND_ERROR)
 		ft_dprintf(2, "send() failure !");
-	ft_printf(""END);
-	ft_dprintf(2, RED"\nerrno : %s\n"END, ERRNO);
+	if (errno > 0 && errno < 107)
+		ft_dprintf(2, RED"\nerrno : %s\n"END, ERRNO);
+	ft_printf("\n"END);
 	exit(errno);
 }
 

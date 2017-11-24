@@ -15,6 +15,14 @@
 static char		g_orig_dir[PATH_MAX] = {0};
 extern uint8_t	g_auth;
 
+/*#define PF ft_printf*/
+
+/*static void	prompt(int signal)*/
+/*{*/
+	/*if (signal == SIGINT)*/
+		/*g_auth == ROOT ? PF(RED"🖥  root:ftp> "END) : PF(GREEN"💻  ftp> "END);*/
+/*}*/
+
 int	main(int argc, char **argv)
 {
 	uint16_t	port;
@@ -27,6 +35,7 @@ int	main(int argc, char **argv)
 		ft_printf(RED"Cannot get base directory\n"END);
 		return (errno);
 	}
+	/*signal(SIGINT, prompt);*/
 	port = is_port_valid(argv, CLIENT);
 	sock = create_client(argv[1], port);
 	send_to_server(sock);
